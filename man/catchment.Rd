@@ -14,7 +14,7 @@
 catchment
 }
 \description{
-A dataset containing the different tracer properties of the different land uses in a Mediterranean catchment and one mixture sample located at the output of the catchment.
+A dataset containing the different tracer properties of the different land uses in a Mediterranean catchment and two mixture samples located at the output of the catchment.
 The variables are as follows:
 }
 \keyword{datasets}

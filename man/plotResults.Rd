@@ -4,7 +4,7 @@
 \alias{plotResults}
 \title{Displays the results in the screen}
 \usage{
-plotResults(data, y_high = 10, n = 1)
+plotResults(data, y_high = 6.5, n = 1, scaled = T, violin = F)
 }
 \arguments{
 \item{data}{Data frame containing the relative contribution of the potential sediment sources for each sediment mixture in the dataset}
@@ -12,6 +12,10 @@ plotResults(data, y_high = 10, n = 1)
 \item{y_high}{Number of the vertical height of the y-axis}
 
 \item{n}{Number of charts per row}
+
+\item{scaled}{Boolean to switch between regular density plot to scaled density plot}
+
+\item{violin}{Boolean to switch between density to violin chart}
 }
 \description{
 The function performs a density chart of the relative contribution of the potential sediment sources for each sediment mixture in the dataset.
