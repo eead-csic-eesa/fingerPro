@@ -16,6 +16,7 @@ typedef struct {
 	double gof1;
 	double gof2;
 	double *w;
+	double dis;
 } type_try;
 
 // Comparison function to sort with
@@ -46,12 +47,26 @@ int compare2(const void *p1, const void *p2)
 	  return 0;
 }
 
+// [[Rcpp::export]]
 double correct(double avg, double dev, int n)
 {
 	if( n > 1 )
 	{
 		return avg + gsl_ran_tdist(rng, (double)(n-1)) * dev / sqrt((double)n);
 	}
+	return avg;
+}
+
+double correct2(double avg, double dev, int n, double *dis)
+{
+	double x1;
+	if( n > 1 )
+	{
+		x1 = gsl_ran_tdist(rng, (double)(n-1)) / sqrt((double)n);
+		*dis = x1;
+		return avg + x1 * dev;
+	}
+	*dis = 0.0;
 	return avg;
 }
 
@@ -114,6 +129,7 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 	double gof1, gof2, sum, avg, des, *max, *min, *try1, *try2;
 	double **source, **source_d, **source_c, **point;
 	int *source_n;
+	double x1, x2;
 
 	// Number of variables
 	vars = dfp.size() - 1;
@@ -135,15 +151,18 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 
 	// Output data frame
 	//Rcpp::List myList(nsource * 2 + 2);
-	Rcpp::List myList(nsource + 2);
+	Rcpp::List myList(nsource + 3);
 	Rcpp::CharacterVector namevec;
+	
 	std::string name = "" + col_names[0];
 	Rcpp::CharacterVector b(points*iter);// = dfp[name];
 	myList[0] = b;
 	namevec.push_back(name);
+	
 	Rcpp::CharacterVector c(points*iter);// = dfp[name];
 	myList[1] = c;
 	namevec.push_back("GOF");
+	
 	for(i = 0 ; i < nsource ; i++ )
 	{
 		std::string name = "" + col_names[1];
@@ -160,6 +179,11 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 //		Rcpp::CharacterVector d = dfs[name4];
 //		namevec.push_back("Dw "+d[i]);
 	}
+	
+	Rcpp::CharacterVector d(points*iter);// = dfp[name];
+	myList[nsource+2] = d;
+	namevec.push_back("DIS");
+	
 	myList.attr("names") = namevec;
 
 	// Read sources variables
@@ -274,17 +298,32 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 						source_c[l][k] = source[l][k];
 					}
 				}
+				x2 = 0.0; // distance to the central value
 			}
 			// compute corrected sources
 			else
 			{
+				x2 = 0.0;
 				for( k = 0 ; k < vars ; k++ )
 				{
 					for( l = 0 ; l < nsource ; l++ )
 					{
-						source_c[l][k] = correct(source[l][k], source_d[l][k], source_n[l]);
+						source_c[l][k] = correct2(source[l][k], source_d[l][k], source_n[l], &x1);
+
+						// keep within the observed limits
+						if(source_c[l][k] > max[k])
+						{
+							source_c[l][k] = max[k];
+						}
+						if(source_c[l][k] < min[k])
+						{
+							source_c[l][k] = min[k];
+						}
+
+						x2 = x2 + x1 * x1;
 					}
 				}
+				x2 = sqrt(x2); // distance to the central value
 			}
 
 			// test solutions
@@ -336,6 +375,7 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 					{
 						best.w[k] = try1[k];
 					}
+					best.dis = x2;
 				}
 
 			}
@@ -347,6 +387,7 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 			{
 				as<CharacterVector>(myList[2+j])[i*iter+ii] = best.w[j];
 			}
+			as<CharacterVector>(myList[2+j])[i*iter+ii] = best.dis;
 		}
 	}
 //	printf("\r                                            \r");
@@ -354,4 +395,3 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 	Rcpp::DataFrame dfout(myList);
 	return dfout;
 }
-

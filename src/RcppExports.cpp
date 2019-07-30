@@ -6,6 +6,19 @@
 
 using namespace Rcpp;
 
+// correct
+double correct(double avg, double dev, int n);
+RcppExport SEXP _fingerPro_correct(SEXP avgSEXP, SEXP devSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type avg(avgSEXP);
+    Rcpp::traits::input_parameter< double >::type dev(devSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(correct(avg, dev, n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // unmix_c
 Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials, int iter, int seed);
 RcppExport SEXP _fingerPro_unmix_c(SEXP sourcesSEXP, SEXP samplesSEXP, SEXP trialsSEXP, SEXP iterSEXP, SEXP seedSEXP) {
@@ -23,6 +36,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_fingerPro_correct", (DL_FUNC) &_fingerPro_correct, 3},
     {"_fingerPro_unmix_c", (DL_FUNC) &_fingerPro_unmix_c, 5},
     {NULL, NULL, 0}
 };
