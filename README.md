@@ -96,6 +96,7 @@ and also refer to the code as:
 # Related research:
 
 - New tools for understanding individual tracers and [tracer selection methodologies ](https://www.sciencedirect.com/science/article/pii/S0048969720310482?via%3Dihub)
+- Sediment source fingerprinting in [Glacial Landscapes](https://www.sciencedirect.com/science/article/pii/S0169555X20302762?via%3Dihub)
 - Agricultural Cycle influence in [sediment and pollutant transport](https://www.sciencedirect.com/science/article/pii/S0301479720309488?via%3Dihub)
-- Changes in source contribution [during](https://www.sciencedirect.com/science/article/pii/S0301479719304220?via%3Dihub) and exceptional storm event and [before-after the event](https://www.sciencedirect.com/science/article/pii/S0169555X19302302?via%3Dihub)
-- [Testing FingerPro model]()https://www.sciencedirect.com/science/article/pii/S0016706118300570 with artificial samples
+- Changes in source contribution [during](https://www.sciencedirect.com/science/article/pii/S0301479719304220?via%3Dihub) an exceptional storm event and [before and after the event](https://www.sciencedirect.com/science/article/pii/S0169555X19302302?via%3Dihub)
+- [Testing FingerPro model](https://www.sciencedirect.com/science/article/pii/S0016706118300570) with artificial samples
