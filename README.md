@@ -71,10 +71,10 @@ result <- unmix(data, samples = 100L, iter =100L)
 plotResults(result, y_high = 5, n = 1)
 ```
 
-![results](https://user-images.githubusercontent.com/30837036/43969666-2ebd7a1a-9ccb-11e8-8d71-445ad2e15daa.png)
+![plotresults_readme](https://user-images.githubusercontent.com/30837036/91887212-c43a0480-ec8a-11ea-9315-06c666da5507.png)
 ```r
-    id   GOF.mean     GOF.SD    AG.mean      AG.SD    PI.mean      PI.SD    SS.mean      SS.SD
-  42744 0.94430071 0.03681212  0.18148918  0.061388  0.4726643   0.0785878  0.3458461  0.0654922
+     id   GOF.mean     GOF.SD   AG.mean     AG.SD    PI.mean      PI.SD    SS.mean      SS.SD
+  42744 0.95232049 0.03197755 0.1947956 0.0636432 0.46714587 0.06078968 0.33805860 0.06227879
     
 ```
 
