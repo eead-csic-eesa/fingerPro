@@ -26,6 +26,7 @@ install.packages('fingerPro_1.1.zip', repos = NULL)
 ```
 Example Usage
 -------------
+The following example has also been stored in the package and can be accessed by using the command **?fingerPro** in your R console after the installation step.
 ``` r
 #If you want to use your own data
 #setwd("the directory that contains your dataset")
