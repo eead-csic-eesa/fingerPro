@@ -3,15 +3,15 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1402029.svg)](https://doi.org/10.5281/zenodo.1402029)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![cran checks](https://cranchecks.info/badges/worst/fingerPro)](https://cranchecks.info/pkgs/fingerPro)
-# fingerPro-model: Sediment source fingerprinting
+![logo def-github-04](https://user-images.githubusercontent.com/30837036/91882995-13c90200-ec84-11ea-9643-0191dfbca995.jpg)
 
-You can cite this package on your work as:
 
-**Lizaga, I., Latorre, B., Gaspar, L., Navas, A., 2020. FingerPro: an R package for tracking the provenance of sediment. Water Resources Management 272, 111020. https://doi.org/10.1016/j.jenvman.2020.111020**.
-and also refer to the code:
-**Lizaga I., Latorre B., Gaspar L., Navas A., (2018) fingerPro: An R package for sediment source tracing, https://doi.org/10.5281/zenodo.1402029**.
+FingerPro is an R package that provides you with the tools to i) characterise the different sediment sources, establish correlations between the tracers and assist the selection of the optimal tracers, ii) graph the results using the state of the art of R packages iii) unmix sediment samples to estimate the apportionment of the sediment sources and iv) test the model using data from a Mediterranean study catchment included in the package. 
 
-Soil loss by erosion processes is one of the largest challenges for food production and reservoir siltation around the world. Information on sediment, nutrients and pollutants is required for designing effective control strategies. The estimation of sediment sources is difficult to get using conventional techniques, but sediment fingerprinting is a potentially valuable tool. In this regard, FingerPro includes the procedure for the selection of the best combination of tracers and estimate the contribution of each possible source.
+For additional details, please see the recently published [FingerPro paper](https://link.springer.com/article/10.1007%2Fs11269-020-02650-0) that includes:
+
+- Full description of functions and how to use them
+- Full description of equations
 
 Installation
 ------------
@@ -32,7 +32,7 @@ Example Usage
 
 #Example of the data included in the fingerPro package
 #Load the dataset called "catchment" 
-install.packages("fingerPro")
+install.packages("fingerPro")    
 library(fingerPro)
 # "Catchment": This dataset has been selected from a Mediterranean catchment and contains high-quality radionuclides and geochemistry data.
 #AG (cropland)
@@ -76,3 +76,24 @@ plotResults(result, y_high = 5, n = 1)
   42744 0.94430071 0.03681212  0.18148918  0.061388  0.4726643   0.0785878  0.3458461  0.0654922
     
 ```
+
+### Feedback
+
+This software has been improved by the questions, suggestions, and bug reports of the user community. If you have any comment, please use the [Issues](https://github.com/eead-csic-eesa/fingerPro/issues) page or report them to lizaga.ivan10@gmail.com.
+
+
+# Citing FingerPro:
+You can cite this package on your work as:
+
+**Lizaga, I., Latorre, B., Gaspar, L., Navas, A., 2020. FingerPro: an R package for tracking the provenance of sediment. Water Resources Management 272, 111020. https://doi.org/10.1007/s11269-020-02650-0**.
+
+and also refer to the code as:
+
+**Lizaga I., Latorre B., Gaspar L., Navas A., (2018) fingerPro: An R package for sediment source tracing, https://doi.org/10.5281/zenodo.1402029**.
+
+# Related research:
+
+- New tools for understanding individual tracers and [tracer selection methodologies ](https://www.sciencedirect.com/science/article/pii/S0048969720310482?via%3Dihub)
+- Agricultural Cycle influence in [sediment and pollutant transport](https://www.sciencedirect.com/science/article/pii/S0301479720309488?via%3Dihub)
+- Changes in source contribution [during](https://www.sciencedirect.com/science/article/pii/S0301479719304220?via%3Dihub) and exceptional storm event and [before-after the event](https://www.sciencedirect.com/science/article/pii/S0169555X19302302?via%3Dihub)
+- [Testing FingerPro model]()https://www.sciencedirect.com/science/article/pii/S0016706118300570 with artificial samples
