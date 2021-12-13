@@ -50,7 +50,7 @@ For additional details, please see the recently published [FingerPro paper](http
 install.packages("fingerPro")
 library(fingerPro)
 # From GitHub (version 1.3)
-devtools::install_github("eead-csic-eesa/fingerPro", ref="main", force = T)
+devtools::install_github("eead-csic-eesa/fingerPro", ref="master", force = T)
 # From your computer (version 1.3)
 setwd("C:/your/file/directory")
 install.packages('fingerPro_1.3.zip', repos = NULL)
