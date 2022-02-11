@@ -6,9 +6,6 @@
 #'
 #' @export
 #'
-
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("result"))
-
 writeResults <- function(data) {
 #summary <- aggregate(. ~ id, data = data, function(x) c(mean = mean(x), SD = sd(x)))
 #Save your data in a .csv file

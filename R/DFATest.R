@@ -40,6 +40,12 @@ DFATest <- function(data, niveau = 0.1) {
   DFA_OFF1 <- DFA_OFF1[, !(names(DFA_OFF1) %in% var)]
   var_OFF.DFA <- names(DFA_OFF1)
   total_DFA <- data[, !(names(data) %in% var_OFF.DFA)]
+  
+  cat('\n')
+  cat(red(crayon::bold("Attention, this methodology is obsolete"),"-> Unconsistent tracers could be included in the model"))
+  cat('\n')
+  cat('\n')
+  
   cat("Attention->", ncol(DFA_OFF1), "variables were removed from a total of", 
     ncol(data[3:ncol(data)]), ":", var_OFF.DFA, ".")
   cat(" The variable/variables that remains in your dataset is/are:", 

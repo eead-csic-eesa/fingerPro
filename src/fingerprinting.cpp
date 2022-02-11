@@ -55,6 +55,14 @@ double correct(double avg, double dev, int n)
 	return avg;
 }
 
+//' unmix_c
+//'
+//' @param sources Data frame containing sediment source samples
+//' @param samples Data frame containing mixture samples
+//' @param trials Number of samples in each hypercube dimension
+//' @param iter Iterations in the source variability analysis
+//' @param seed Seed for the random number generator
+//' @return Data frame containing the relative contribution of the sediment sources for each sediment mixture and iterations
 // [[Rcpp::export]]
 Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100, int seed=69512)
 {
@@ -362,6 +370,13 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 }
 
 
+//' least_squares_c
+//'
+//' @param sources Data frame containing sediment source samples
+//' @param samples Data frame containing mixture samples
+//' @param iter Iterations in the source variability analysis
+//' @param seed Seed for the random number generator
+//' @return Data frame containing the relative contribution solved by the least squares method
 // [[Rcpp::export]]
 Rcpp::DataFrame least_squares_c(SEXP sources, SEXP samples, int iter=100, int seed=69512)
 {
@@ -752,6 +767,14 @@ Rcpp::DataFrame least_squares_c(SEXP sources, SEXP samples, int iter=100, int se
 	return dfout;
 }
 
+//' triangles_random_c
+//'
+//' @param sources Data frame containing sediment source samples
+//' @param samples Data frame containing mixture samples
+//' @param tracer Tracer in which implement the function
+//' @param iter Iterations in the source variability analysis
+//' @param seed Seed for the random number generator
+//' @return List of data frames containing all the possible prediction for each tracer
 // [[Rcpp::export]]
 Rcpp::DataFrame triangles_random_c(SEXP sources, SEXP samples, int tracer=0, int iter=100, int seed=69512)
 {
@@ -1127,6 +1150,14 @@ Rcpp::DataFrame triangles_random_c(SEXP sources, SEXP samples, int tracer=0, int
 	return dfout;
 }
 
+//' triangles_virtual_c
+//'
+//' @param sources Data frame containing sediment source samples
+//' @param samples Data frame containing mixture samples
+//' @param tracer Tracer in which implement the function
+//' @param iter Iterations in the source variability analysis
+//' @param seed Seed for the random number generator
+//' @return List of data frames containing all the possible prediction for each tracer inside the dataset
 // [[Rcpp::export]]
 Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP samples, int tracer=0, int iter=100, int seed=69512)
 {

@@ -7,9 +7,6 @@
 #'
 #' @export
 #' 
-
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("groups"))
-
 PCAPlot <- function(data, components = c(1:2)) {
 
    # reorder groups

@@ -11,55 +11,54 @@ Soil erosion is one of the biggest challenges for food production and reservoirs
 \author{
 Ivan Lizaga, Borja Latorre, Leticia Gaspar, Ana Navas
 
-Maintainer: Ivan Lizaga <ilizaga@eead.csic.es // lizaga.ivan10@gmail.com>
+Maintainer: Ivan Lizaga <lizaga.ivan10@gmail.com>
 }
 % Optionally other standard keywords, one per line,
 % from the file KEYWORDS in the R documentation.
 \keyword{ Sediment source fingerprinting package }
 \seealso{
-  https://github.com/eead-csic-eesa
+  GitHub repository:
+  https://github.com/eead-csic-eesa/fingerPro
+  
+  VIDEO TUTORIALS:
+  https://www.youtube.com/watch?v=LcrM_vLOa_I&ab_channel=UnmixingScience
 }
 \examples{
-#Created by Ivan Lizaga 02/08/2018
+# Created by Ivan Lizaga 28/01/2022
 
-#If you want to use your own data
-#setwd("the directory that contains your dataset")
-#data <- read.table('your dataset', header = T, sep = '\t')
+# If you want to use your own data,
+# I recommend following the format of the datasets included in the package
+# setwd("the directory that contains your dataset")
+# data <- read.table('your dataset.csv', header = T, sep = ',')
 
-#Example of the data included in the fingerPro package
-#Load the dataset called "catchment" 
+# Example of the data included in the fingerPro package
+# Load the dataset called "catchment" 
 install.packages("fingerPro")
 library(fingerPro)
-# "Catchment": this dataset has been selected from a Mediterranean catchment for this purpose and contains high-quality radionuclides and geochemistry data.
-#AG (cropland)
-#PI and PI1 (Pine forest, at first looks different but when you display de LDA plot you will see that the wisher decision in join both pines as the same source)
-#SS (subsoil)
+# "catchment": this dataset has been selected from a Mediterranean catchment
+# to test the multiple functions inside the package. 
+# It contains high-quality radionuclides and geochemistry data, four sources and one mixture.
+# AG (cropland), PI and PI1 (Two types of Pine forest), and SS (subsoil)
+
+
+# Load the 'catchment' dataset to test the graphical functions
 data <- catchment
+
+# Display boxplots and a correlation graph of the loaded dataset
 boxPlot(data, columns = 1:6, ncol = 3)
-correlationPlot(data, columns = 1:5, mixtures = T)
-LDAPlot(data, P3D=FALSE)
-#variables are collinear
-#select the optimum set of tracers by implementing the statistical tests 
-data <- rangeTest(data)
-data <- KWTest(data)
-data <- DFATest(data)
-#Check how the selected tracers discriminate between sources
-LDAPlot(data, P3D=F)
-LDAPlot(data, P3D=T)
-#2D and 3D LDAPlots suggest that two of the sources have to be combined
-#reload the original dataset "catchment"
-data <- catchment
-# Combine sources PI1 and PI based on the previous LDAPlot
-data$Land_Use[data$Land_Use == 'PI1'] <- 'PI'
-#select the optimum set of tracers by implementing the statistical tests 
-data <- rangeTest(data)
-data <- KWTest(data)
-data <- DFATest(data)
-LDAPlot(data, P3D=F)
+correlationPlot(data, columns = 1:7, mixtures = TRUE)
+
+# Check how the selected tracers discriminate between the potential sources
+LDAPlot(data[, c(1:10)], P3D=FALSE, text = FALSE)
+LDAPlot(data[, c(1:10)], P3D=FALSE, text = TRUE) #adding point information
+LDAPlot(data[, c(1:10)], P3D=TRUE, text = FALSE) #3D LDA
+
+# Displaying a PCA graph 
 PCAPlot(data)
-#Now the optimum tracer properties selected discriminate well, so proceed with the unmix function
-result <- unmix(data, samples = 100L, iter =100L)
-#Display the results
-plotResults(result, y_high = 5, n = 1)
-writeResults(result)
+
+# Imagine we would like to combine PI and PI1 sources based on the previous graphs
+data$Land_Use[data$Land_Use == 'PI1'] <- 'PI'
+
+# Let's check again the discriminant capacity of the first 10 tracers
+LDAPlot(data[, c(1:10)], P3D=FALSE, text = TRUE)
 }

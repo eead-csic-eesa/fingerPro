@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // unmix_c
 Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials, int iter, int seed);
 RcppExport SEXP _fingerPro_unmix_c(SEXP sourcesSEXP, SEXP samplesSEXP, SEXP trialsSEXP, SEXP iterSEXP, SEXP seedSEXP) {

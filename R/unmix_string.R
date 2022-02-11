@@ -12,7 +12,7 @@
 #'
 #' @export
 #'
-unmix <- function(data, samples = 100L, iter = 100L, Means = F, seed = 123456L){
+unmix_string <- function(data, samples = 100L, iter = 100L, Means = F, seed = 123456L){
   system.time({
     if (Means == T) {
       sources <- data[c(1:(nrow(data)-1)),c(2:ncol(data))]
@@ -40,7 +40,7 @@ unmix <- function(data, samples = 100L, iter = 100L, Means = F, seed = 123456L){
       cat("Summary of the model imputs:
         ", (ncol(data)-3)/2, "variables from",nrow(nsources1)-1,"sources (",nsources,")",
           "\n")
-      
+
     } else {
       cat("Summary of the model imputs:
         ", ncol(data)-2, "variables from",nrow(nsources1)-1,"sources (",nsources,")",
@@ -56,6 +56,43 @@ unmix <- function(data, samples = 100L, iter = 100L, Means = F, seed = 123456L){
     else {  
       results <- unmix_c(sources, mixtures, samples, iter+1, seed)
     }
+    
+    if (nrow(sources) == 3) {
+        results <- results[results[,3] >= 0.0, ]
+        results <- results[results[,3] <= 1.0, ]
+        results <- results[results[,4] >= 0.0, ]
+        results <- results[results[,4] <= 1.0, ]
+        results <- results[results[,5] >= 0.0, ]
+        results <- results[results[,5] <= 1.0, ]
+    } else if (nrow(sources) == 4) {
+        results <- results[results[,3] >= 0.0, ]
+        results <- results[results[,3] <= 1.0, ]
+        results <- results[results[,4] >= 0.0, ]
+        results <- results[results[,4] <= 1.0, ]
+        results <- results[results[,5] >= 0.0, ]
+        results <- results[results[,5] <= 1.0, ]
+        results <- results[results[,6] >= 0.0, ]
+        results <- results[results[,6] <= 1.0, ]
+    } else if (nrow(sources) == 5) {
+        results <- results[results[,3] >= 0.0, ]
+        results <- results[results[,3] <= 1.0, ]
+        results <- results[results[,4] >= 0.0, ]
+        results <- results[results[,4] <= 1.0, ]
+        results <- results[results[,5] >= 0.0, ]
+        results <- results[results[,5] <= 1.0, ]
+        results <- results[results[,6] >= 0.0, ]
+        results <- results[results[,6] <= 1.0, ]
+        results <- results[results[,7] >= 0.0, ]
+        results <- results[results[,7] <= 1.0, ]
+    } else {
+      results <- results
+    }
+
+    
+    cat('\n')
+    cat(crayon::bold("Attention", "from a total of", iter, " only ", nrow(results), "solutions remain inside the physical space"))
+    cat('\n')
+    cat('\n')
     
     # reorder factor levels in order of appearance
     data[, 2] <- factor(data[, 2], levels = unique(data[, 2]))
@@ -114,6 +151,6 @@ unmix <- function(data, samples = 100L, iter = 100L, Means = F, seed = 123456L){
     }
     
     return(results)
-    
+
   })
 }

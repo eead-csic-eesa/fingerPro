@@ -37,13 +37,12 @@
 #' @param varname.size    size of the text for variable names
 #' @param varname.adjust  adjustment factor the placement of the variable names, >= 1 means farther from the arrow
 #' @param varname.abbrev  whether or not to abbreviate the variable names
-#'
+#' @param circle.prob     size of the circle in Normal probability
+#' @param ...             ...
+#' 
 #' @return                a ggplot2 plot
 #' @export
 #' 
-
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("xvar", "yvar", "varname", "angle", "hjust"))
-
 ggbiplot <- function(pcobj, choices = 1:2, scale = 1, pc.biplot = TRUE, 
                       obs.scale = 1 - scale, var.scale = scale, 
                       groups = NULL, ellipse = FALSE, ellipse.prob = 0.68, 

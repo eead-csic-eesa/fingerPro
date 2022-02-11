@@ -8,9 +8,6 @@
 #'
 #' @export
 #'
-
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("s_max", "t_max","s_min","t_min"))
-
 rangeTest <- function(data) {
   # reorder factor levels in order of appearance
   data[, 2] <- factor(data[, 2], levels = unique(data[, 2]))

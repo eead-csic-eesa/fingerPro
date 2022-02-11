@@ -1,4 +1,17 @@
-pairs <- function(source, mixture, iter=10, seed=123456)
+#' Pairs function 
+#'
+#' Extract all the possible selections formed by sets of n ??? 1 tracers and solve them by using standard methods
+#'
+#' @param source Data frame containing the sediment sources from a dataset
+#' @param mixture Data frame containing one of the dataset mixtures
+#' @param iter Number of iteration for each tracer
+#' @param seed Seed for the random number generator
+#' 
+#' @return Data frame containing all the possible pairs combination from your dataset, their system of equation solution, the consistency and the discriminant capacity. 
+#'
+#' @export
+#'
+pairs <- function(source, mixture, iter = 1000, seed = 123456)
 {
   set.seed(seed)
   
@@ -11,6 +24,9 @@ pairs <- function(source, mixture, iter=10, seed=123456)
   n <- cols*2+1 # n column
   
   df <- data.frame(id=character(), w1=double(), w2=double(), w3=double(), Dw1=double(), Dw2=double(), Dw3=double(), cons=double(),stringsAsFactors = FALSE)
+  
+  # Introduce the progress bar
+  pb <- txtProgressBar(min = 0, max = cols, style = 3, width = 50, char = "=")
   
   for (i in c(1:cols))
   {
@@ -82,11 +98,12 @@ pairs <- function(source, mixture, iter=10, seed=123456)
         df[nrow(df) + 1,] <- list(paste0(tracer[i],' ',tracer[j]), w1[1], w2[1], w3[1], (quantile(w1, 0.84)[[1]] - quantile(w1, 0.16)[[1]])/2, (quantile(w2, 0.84)[[1]] - quantile(w2, 0.16)[[1]])/2, (quantile(w3, 0.84)[[1]] - quantile(w3, 0.16)[[1]])/2, sc/(sc+snc))
       }
     }
-  }
+    setTxtProgressBar(pb, i)}
   
   df <- transform(df, Dmax = pmax(Dw1, Dw2, Dw3))
   df <- df[order(df$Dmax),]
   row.names(df) <- NULL
-  
+  cat('\n')
+  cat('\n')
   return(df)
 }

@@ -4,7 +4,7 @@
 \alias{plotResults}
 \title{Displays the results in the screen}
 \usage{
-plotResults(data, y_high = 6.5, n = 1, scaled = T, violin = F)
+plotResults(data, y_high = 1, n = 1, scaled = T, violin = F)
 }
 \arguments{
 \item{data}{Data frame containing the relative contribution of the potential sediment sources for each sediment mixture in the dataset}

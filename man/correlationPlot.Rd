@@ -4,7 +4,12 @@
 \alias{correlationPlot}
 \title{Correlation matrix chart}
 \usage{
-correlationPlot(data, columns = c(1:ncol(data) - 1), mixtures = F)
+correlationPlot(
+  data,
+  columns = c(1:ncol(data) - 1),
+  mixtures = F,
+  nmixtures = 1
+)
 }
 \arguments{
 \item{data}{Data frame containing source and mixtures data}
@@ -12,6 +17,8 @@ correlationPlot(data, columns = c(1:ncol(data) - 1), mixtures = F)
 \item{columns}{Numeric vector containing the index of the columns in the chart (the first column refers to the grouping variable)}
 
 \item{mixtures}{Boolean to include or exclude the mixture samples in the chart}
+
+\item{nmixtures}{Number of mixtures in the dataset}
 }
 \description{
 The function displays a correlation matrix of each of the properties divided by the different sources to help the user in the decision.

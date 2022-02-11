@@ -1,4 +1,4 @@
-#' Unmix sediment mixtures
+#' least square unmixing
 #'
 #' Asses the relative contribution of the potential sediment sources for each sediment mixture in the dataset.
 #'

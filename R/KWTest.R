@@ -41,6 +41,11 @@ KWTest <- function(data, pvalue = 0.05) {
   varOFFKW <- as.vector(KWOFF$var)
   total_KW <- data[, !(names(data) %in% varOFFKW)]
   
+  cat('\n')
+  cat(red(crayon::bold("Attention, this methodology is obsolete"),"-> Unconsistent tracers could be included in the model"))
+  cat('\n')
+  cat('\n')
+  
   cat("Attention->", nrow(KWOFF), "variables from a total of", ncol(data[3:ncol(data)]), 
     "were removed:", varOFFKW, ".")
   cat(" The variable/variables that remains in your dataset is/are:", 
