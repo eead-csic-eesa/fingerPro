@@ -152,7 +152,7 @@ data <- read.csv(sources.file)
 results_CI <- CI_Method(data, points = 2000, Means = T) # Means = F (When using raw data)
 
 # Plot the individual tracers solution from the 8 first tracers
-Ternary_diagram(results_CI, tracers = c(1:6), nrow = 1, ncol = 6)
+Ternary_diagram(results_CI, tracers = c(1:6), n_row = 1, n_col = 6)
 ```
 ![image](https://user-images.githubusercontent.com/30837036/136755984-3b9daf01-8362-417f-b69e-08f7d48e584d.png)
 ##### Ternary plots of all possible predictions of each tracer
