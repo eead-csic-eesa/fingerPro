@@ -42,7 +42,7 @@ KWTest <- function(data, pvalue = 0.05) {
   total_KW <- data[, !(names(data) %in% varOFFKW)]
   
   cat('\n')
-  cat(red(crayon::bold("Attention, this methodology is obsolete"),"-> Unconsistent tracers could be included in the model"))
+  cat(crayon::red(crayon::bold("Attention, this methodology is obsolete"),"-> Unconsistent tracers could be included in the model"))
   cat('\n')
   cat('\n')
   
