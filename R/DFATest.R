@@ -42,7 +42,7 @@ DFATest <- function(data, niveau = 0.1) {
   total_DFA <- data[, !(names(data) %in% var_OFF.DFA)]
   
   cat('\n')
-  cat(red(crayon::bold("Attention, this methodology is obsolete"),"-> Unconsistent tracers could be included in the model"))
+  cat(crayon::red(crayon::bold("Attention, this methodology is obsolete"),"-> Unconsistent tracers could be included in the model"))
   cat('\n')
   cat('\n')
   
