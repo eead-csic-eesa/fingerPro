@@ -33,7 +33,7 @@ Ternary_diagram <- function(data, tracers= 1:2, n_row = 1, n_col = 2, Means = T)
     z <- result$w.S3
     
     test <- as.data.frame(cbind(x,y,z))
-    plots [[i2]] <- TernaryPlot(atip = "S1", btip = "S2", ctip = "S3",xlim = c(-0.75,0.75)) +
+    plots [[i2]] <- TernaryPlot(atip = "S1", btip = "S2", ctip = "S3",xlim = c(-0.75,0.75)) 
       TernaryPoints(test, col = alpha('blue', 0.5), cex = 0.1) +
       title(t_names[i2], cex.main = 3.5)
     }
@@ -81,18 +81,18 @@ Ternary_diagram <- function(data, tracers= 1:2, n_row = 1, n_col = 2, Means = T)
       test5 <- as.data.frame(cbind(x5,y5,z5))
 
       
-      TernaryPlot(atip="S1", btip = "S2", ctip = "S3 + S4",xlim = c(-0.75,0.75),tip.cex = 1) +
+      TernaryPlot(atip="S1", btip = "S2", ctip = "S3 + S4",xlim = c(-0.75,0.75),tip.cex = 1) 
         TernaryPoints(test2, col=alpha('blue',0.5), cex=0.1) + 
         title(t_names[i2], cex.main=3.5, )
-      TernaryPlot(atip="S2", btip = "S3", ctip = "S1 + S4",xlim = c(-0.75,0.75)) +
+      TernaryPlot(atip="S2", btip = "S3", ctip = "S1 + S4",xlim = c(-0.75,0.75)) 
         TernaryPoints(test1, col=alpha('blue',0.5), cex=0.1) 
-      TernaryPlot(atip="S3", btip = "S4", ctip = "S1 + S2",xlim = c(-0.75,0.75)) +
+      TernaryPlot(atip="S3", btip = "S4", ctip = "S1 + S2",xlim = c(-0.75,0.75)) 
         TernaryPoints(test2, col=alpha('blue',0.5), cex=0.1) 
-      TernaryPlot(atip="S4", btip = "S1", ctip = "S3 + S2",xlim = c(-0.75,0.75)) +
+      TernaryPlot(atip="S4", btip = "S1", ctip = "S3 + S2",xlim = c(-0.75,0.75)) 
         TernaryPoints(test3, col=alpha('blue',0.5), cex=0.1) 
-      TernaryPlot(atip="S1", btip = "S3", ctip = "S4 + S2",xlim = c(-0.75,0.75)) +
+      TernaryPlot(atip="S1", btip = "S3", ctip = "S4 + S2",xlim = c(-0.75,0.75)) 
         TernaryPoints(test4, col=alpha('blue',0.5), cex=0.1) 
-      TernaryPlot(atip="S2", btip = "S4", ctip = "S1 + S3",xlim = c(-0.75,0.75)) +
+      TernaryPlot(atip="S2", btip = "S4", ctip = "S1 + S3",xlim = c(-0.75,0.75)) 
         TernaryPoints(test5, col=alpha('blue',0.5), cex=0.1) 
       
     }
