@@ -49,11 +49,14 @@ For additional details, please see the recently published [FingerPro paper](http
 # From CRAN (version 1.1)
 install.packages("fingerPro")
 library(fingerPro)
-# From GitHub (version 1.3)
-devtools::install_github("eead-csic-eesa/fingerPro", ref="master", force = T)
+
 # From your computer (version 1.3)
+Dowload the fingerPro_1.3.zip file from GitHub on you computer
 setwd("C:/your/file/directory")
 install.packages('fingerPro_1.3.zip', repos = NULL)
+
+# From GitHub (version 1.3)
+devtools::install_github("eead-csic-eesa/fingerPro", ref = "master", force = T)
 ```
 
 ## Preparing your data
