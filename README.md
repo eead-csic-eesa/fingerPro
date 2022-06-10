@@ -239,6 +239,8 @@ multiplot(P1, P2, cols = 2)
 ## The basics of the technique
 [![Alt text](https://img.youtube.com/vi/LcrM_vLOa_I/0.jpg)](https://www.youtube.com/watch?v=LcrM_vLOa_I)
 
+## The FingerPro package, a tutorial with code examples
+[![Alt text](https://img.youtube.com/vi/7HwGcRSO2O8/0.jpg)](https://www.youtube.com/watch?v=7HwGcRSO2O8&ab_channel=UnmixingScience)
 
 ## Citing FingerPro and its tools
 You can cite this package and the new developed tools on your work as:
@@ -249,6 +251,8 @@ You can cite this package and the new developed tools on your work as:
 
 **Latorre, B., Lizaga, I., Gaspar, L., Navas, A., 2021. A novel method for analysing consistency and unravelling multiple solutions in sediment fingerprinting. Science of The Total Environment 789, 147804. https://doi.org/10.1016/j.scitotenv.2021.147804**
 
+**Lizaga, I., Latorre, B., Gaspar, L., Navas, A., 2022. Combined use of geochemistry and compound-specific stable isotopes for sediment fingerprinting and tracing. Science of The Total Environment 832, 154834. https://doi.org/10.1016/j.scitotenv.2022.154834**
+
 and also refer to the code as:
 
 **Lizaga I., Latorre B., Gaspar L., Navas A., (2018) fingerPro: An R package for sediment source tracing, https://doi.org/10.5281/zenodo.1402029**.
@@ -257,7 +261,7 @@ and also refer to the code as:
 This software has been improved by the questions, suggestions, and bug reports of the user community. If you have any comment, please use the [Issues](https://github.com/eead-csic-eesa/fingerPro/issues) page or report them to lizaga.ivan10@gmail.com.
 
 ## Related research
-
+- Combining geochemistry and [isotopic tracers](https://www.sciencedirect.com/science/article/pii/S0048969722019271?via%3Dihub#f0040)
 - New tools for understanding individual tracers and [tracer selection methodologies ](https://www.sciencedirect.com/science/article/pii/S0048969720310482?via%3Dihub)
 - Sediment source fingerprinting in [Glacial Landscapes](https://www.sciencedirect.com/science/article/pii/S0169555X20302762?via%3Dihub)
 - Agricultural Cycle influence in [sediment and pollutant transport](https://www.sciencedirect.com/science/article/pii/S0301479720309488?via%3Dihub)
