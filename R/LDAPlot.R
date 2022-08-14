@@ -46,7 +46,7 @@ LDAPlot <- function(data, P3D = FALSE, text = FALSE) {
       colour = "black", linetype = "longdash") + stat_ellipse(type = "t",
       size = 1, geom = "polygon", alpha = 0.2, aes(fill = Sources),
       level = 0.9) + stat_ellipse(type = "t", size = 1, aes(colour = Sources),
-      level = 0.9) + ggtitle("DFA") + theme(plot.title = element_text(hjust = 0.5))
+      level = 0.9) + ggtitle("LDA") + theme(plot.title = element_text(hjust = 0.5))
 
       } else {
     plot <- ggplot(data.lda.temp, aes(LD1, LD2, colour = Sources)) + 
@@ -55,7 +55,7 @@ LDAPlot <- function(data, P3D = FALSE, text = FALSE) {
       geom_vline(xintercept = 0, colour = "black", linetype = "longdash") + stat_ellipse(type = "t", 
        size = 1, geom = "polygon", alpha = 0.2, aes(fill = Sources),
        level = 0.9) + stat_ellipse(type = "t", size = 1, aes(colour = Sources),
-       level = 0.9) + ggtitle("DFA") + theme(plot.title = element_text(hjust = 0.5))
+       level = 0.9) + ggtitle("LDA") + theme(plot.title = element_text(hjust = 0.5))
       }
   }
 
