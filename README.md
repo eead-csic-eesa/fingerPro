@@ -14,7 +14,7 @@ The package used the state of the art equations and techniques for rigorous unmi
 <details>
 <summary><strong>Table of Contents</strong></summary>
 <!-- toc -->
-
+  
 ## Table of Contents
 -------------
 - [Installation](#installation)
@@ -28,7 +28,9 @@ The package used the state of the art equations and techniques for rigorous unmi
    * [Conservativeness index (CI) and Ternary plots](#conservativeness-index-and-ternary-plots)
    * [Consensus Ranking approach (CR)](#consensus-ranking-approach)
    * [Consistency based tracer selection](#consistency-based-tracer-selection)
-- [The basics of the technique (Video)](#the-basics-of-the-technique)
+- [Video Tutorials :clapper:](#video-tutorials)
+   * [The basics of the technique](#the-basics-of-the-technique)
+   * [The FingerPro package: A tutorial with code examples](#the-fingerpro-package)
 - [Citing FingerPro and its tools](#citing-fingerpro-and-its-tools)
 - [Contributing and feedback](#contributing-and-feedback)
 - [Related research](#related-research)
@@ -43,6 +45,12 @@ For additional details, please see the recently published [FingerPro paper](http
 
 - Full description of functions and how to use them
 - Full description of equations
+
+If you're working with **stable isotopes** or want to combine them with elemental tracers, check the latest published method [conservative balance (CB)](https://www.sciencedirect.com/science/article/pii/S0048969722019271?via%3Dihub) 
+
+--------------------------------------------------------------------------------
+##  :point_right: Frequently Asked Questions :arrow_right: [Check them!](FaQ.md)
+--------------------------------------------------------------------------------
 
 ## Installation
 ``` r
@@ -211,10 +219,11 @@ head(pgeo)
 
 #Explore those pairs (e.g. Ba & Sr)
 sol <- pgeo[pgeo$id=="Ba Sr",]
-ctsgeo <- cts_3s(source=sgeo, mixture=mgeo, sol=c(sol$w1, sol$w2, sol$w3))
-ctsgeo <- ctsgeo %>% right_join(crgeo, by=c("tracer"))
-ctsgeo <- ctsgeo[ctsgeo$err<0.025 & ctsgeo$score>80,]
+ctsgeo <- cts_3s(source = sgeo, mixture = mgeo, sol = c(sol$w1, sol$w2, sol$w3))
+ctsgeo <- ctsgeo %>% right_join(crgeo, by = c("tracer"))
+ctsgeo <- ctsgeo[ctsgeo$err < 0.025 & ctsgeo$score > 80,]
 print(ctsgeo)
+
   tracer          err score
 1     Ba 1.110223e-16 96.45
 3      K 4.117438e-03 95.15
@@ -224,23 +233,22 @@ print(ctsgeo)
 data1 <- select(data,"id","sources","Ba", "Li", "K", "Sr", "DBa", "DLi", "DK", "DSr", "n")
 
 result_FP_1 <- unmix(data1, samples = 200, iter = 200, Means = T)
-P1 <- plotResults(result_FP_1,y_high = 1)
-
-library(MixSIAR)
-result_MixSIAR <- MixSIAR_F_SD(data1, chain = "very long", Means = T)
-result_TM_MxS <- as.data.frame(result_MixSIAR)
-result_TM_MxS <- cbind(id=1,id2 = 1:nrow(result_TM_MxS), result_TM_MxS)
-P2 <- plotResults(result_TM_MxS, y_high = 1)
-multiplot(P1, P2, cols = 2)
+P1 <- plotResults(result_FP_1, y_high = 1)
 ```
-![image](https://user-images.githubusercontent.com/30837036/136755551-b3724283-668f-48e5-a803-dbcdd3a174bc.png)
-##### FingerPro and MixSIAR models results from one of the consistent solutions extracted from the CTS method
+#### FingerPro model results from one of the consistent solutions extracted from the CTS method
+<img src="https://user-images.githubusercontent.com/30837036/220908135-156de925-d5b5-48ab-8106-869df61e5701.PNG" alt="alt text" width="451.5" height="322.5">
+
+# :clapper: Video Tutorials
 
 ## The basics of the technique
 [![Alt text](https://img.youtube.com/vi/LcrM_vLOa_I/0.jpg)](https://www.youtube.com/watch?v=LcrM_vLOa_I)
 
-## The FingerPro package, a tutorial with code examples
+**Also available on [bilibili](https://www.bilibili.com/video/BV1xZ4y147Ud/?spm_id_from=333.999.0.0)**
+
+## The FingerPro package
 [![Alt text](https://img.youtube.com/vi/7HwGcRSO2O8/0.jpg)](https://www.youtube.com/watch?v=7HwGcRSO2O8&ab_channel=UnmixingScience)
+
+**Also available on [bilibili](https://www.bilibili.com/video/BV1mY411M7AW/?spm_id_from=333.999.0.0&vd_source=be6d6fbd57395fc4b904aa65d8bf97d1)**
 
 ## Citing FingerPro and its tools
 You can cite this package and the new developed tools on your work as:
@@ -263,7 +271,8 @@ This software has been improved by the questions, suggestions, and bug reports o
 ## Related research
 - Combining geochemistry and [isotopic tracers](https://www.sciencedirect.com/science/article/pii/S0048969722019271?via%3Dihub#f0040)
 - New tools for understanding individual tracers and [tracer selection methodologies ](https://www.sciencedirect.com/science/article/pii/S0048969720310482?via%3Dihub)
-- Sediment source fingerprinting in [Glacial Landscapes](https://www.sciencedirect.com/science/article/pii/S0169555X20302762?via%3Dihub)
+- Sediment source fingerprinting in Glacial Landscapes, [Svalbard](https://www.sciencedirect.com/science/article/pii/S0169555X20302762?via%3Dihub) and [Peruvian Andes](https://onlinelibrary.wiley.com/doi/full/10.1002/hyp.14662)
 - Agricultural Cycle influence in [sediment and pollutant transport](https://www.sciencedirect.com/science/article/pii/S0301479720309488?via%3Dihub)
 - Changes in source contribution [during](https://www.sciencedirect.com/science/article/pii/S0301479719304220?via%3Dihub) an exceptional storm event and [before and after the event](https://www.sciencedirect.com/science/article/pii/S0169555X19302302?via%3Dihub)
+- Sediment source fingerprinting in [desert environments](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4252170)
 - [Testing FingerPro model](https://www.sciencedirect.com/science/article/pii/S0016706118300570) with artificial samples
