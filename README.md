@@ -59,10 +59,10 @@ install.packages("fingerPro")
 library(fingerPro)
 
 # From your computer (version 1.3)
-Download the fingerPro_1.3.zip file from GitHub on your computer. Depending on your version of R, choose one or another.
+# Download the fingerPro_1.3.zip file from GitHub on your computer. Depending on your version of R, choose one or another.
 setwd("C:/your/file/directory")
 # install.packages('fingerPro_1.3.zip', repos = NULL) # R 4.1.2
-install.packages('fingerPro_1.3_2023.zip', repos = NULL) # R 4.2.1
+install.packages('fingerPro_1.33.zip', repos = NULL) # R 4.2.1
 
 # From GitHub (version 1.3)
 devtools::install_github("eead-csic-eesa/fingerPro", ref = "master", force = T)
