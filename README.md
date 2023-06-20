@@ -8,8 +8,8 @@
 ![logo def-github-04](https://user-images.githubusercontent.com/30837036/91882995-13c90200-ec84-11ea-9643-0191dfbca995.jpg)
 ### FingerPro is a collaborative R project aiming to solve and share all modelling concerns around the sediment fingerprinting technique. Join us and discover the insights of your data!!
 
-The package provides users with tools to i) characterise you database ii) assist in the selection of the optimal tracers moving forward from the traditional tracer selection methods (also included), iii) extract the multiple and consensual solutions in your database and iv) unmix sediment samples to estimate the apportionment of the sediment sources.
-The package used the state of the art equations and techniques for rigorous unmixing avoiding previous thoughts about only relying on models capacity.
+The package provides users with tools to i) characterise your database ii) assist in the selection of the optimal tracers moving forward from the traditional tracer selection methods (also included), iii) extract the multiple and consensual solutions in your database and iv) unmix sediment samples to estimate the apportionment of the sediment sources.
+The package used state-of-the-art equations and techniques for rigorous unmixing avoiding previous thoughts about only relying on models capacity.
 
 <details>
 <summary><strong>Table of Contents</strong></summary>
@@ -59,22 +59,23 @@ install.packages("fingerPro")
 library(fingerPro)
 
 # From your computer (version 1.3)
-Dowload the fingerPro_1.3.zip file from GitHub on you computer
+Download the fingerPro_1.3.zip file from GitHub on your computer. Depending on your version of R, choose one or another.
 setwd("C:/your/file/directory")
-install.packages('fingerPro_1.3.zip', repos = NULL)
+# install.packages('fingerPro_1.3.zip', repos = NULL) # R 4.1.2
+install.packages('fingerPro_1.3_2023.zip', repos = NULL) # R 4.2.1
 
 # From GitHub (version 1.3)
 devtools::install_github("eead-csic-eesa/fingerPro", ref = "master", force = T)
 ```
 
 ## Preparing your data
- To use your own data is as easy as to follow the format supplied in the example data included in the fingerPro package
+ To use your own data is as easy as following the format supplied in the example data included in the fingerPro package
  ```r
  print (catchment)
  ``` 
- When using raw data the following structure needs to be followed
+ When using raw data, the following structure needs to be followed
   - The first column must be numeric corresponding to the sample ID
-  - The second column correspond to the different sources
+  - The second column corresponds to the different sources
   ```r
  head (catchment[,c(1:6)])
      id Land_Use  Pbex K40 Bi214 Ra226
@@ -85,7 +86,7 @@ devtools::install_github("eead-csic-eesa/fingerPro", ref = "master", force = T)
 5 42741       AG  3.38 567  28.2  29.4
 6 42770       AG  0.32 586  29.9  31.6
 ```
-  - Your mixtures must be located in the last rows with the same name in the 2nd column and different ID (column 1)
+  - Your mixtures must be located in the last rows with the same name in the 2nd column and a different ID (column 1)
  ```r
  tail (catchment[,c(1:6)])
        id   Land_Use  Pbex K40 Bi214 Ra226
@@ -112,7 +113,7 @@ data <- read.table("your dataset.csv", header = T, sep = ',')
 ## Visual plots
 The following example displays all the basics commands available in the package to display informative graphs.
 
-If you want to use your own data see the previous section [preparing your data](#preparing-your-data)
+If you want to use your own data, see the previous section [preparing your data](#preparing-your-data)
 
 ``` r
 #Load the dataset called "catchment" 
@@ -145,7 +146,7 @@ PCAPlot(data, components = 1:2)
 
 # Novel methods for tracer selection and data understanding
 -------------
-Moving forward from the traditionally implemented tracer selection methods proven wrong by recent research, this section explains how to implement state of the art approaches to extract individual tracer information and multiple solutions to assist you in this crucial step.
+Moving forward from the traditionally implemented tracer selection methods proven wrong by recent research, this section explains how to implement state-of-the-art approaches to extract individual tracer information and multiple solutions to assist you in this crucial step.
 
 Major benefits:
 - Understanding your dataset
@@ -202,7 +203,7 @@ head(crgeo)
 34      V  0.05
 ```
 
-## Consistency based tracer selection
+## Consistency-based tracer selection
 ![image](https://user-images.githubusercontent.com/30837036/136759634-d3ed9262-9cb8-4f0f-a9d1-36f7fbcbc60c.png)
 
 ```r
@@ -251,7 +252,7 @@ P1 <- plotResults(result_FP_1, y_high = 1)
 **Also available on [bilibili](https://www.bilibili.com/video/BV1mY411M7AW/?spm_id_from=333.999.0.0&vd_source=be6d6fbd57395fc4b904aa65d8bf97d1)**
 
 ## Citing FingerPro and its tools
-You can cite this package and the new developed tools on your work as:
+You can cite this package and the newly developed tools on your work as:
 
 **Lizaga, I., Latorre, B., Gaspar, L., Navas, A., 2020. FingerPro: an R package for tracking the provenance of sediment. Water Resources Management 272, 111020. https://doi.org/10.1007/s11269-020-02650-0**.
 
@@ -266,7 +267,7 @@ and also refer to the code as:
 **Lizaga I., Latorre B., Gaspar L., Navas A., (2018) fingerPro: An R package for sediment source tracing, https://doi.org/10.5281/zenodo.1402029**.
 
 ## Contributing and feedback
-This software has been improved by the questions, suggestions, and bug reports of the user community. If you have any comment, please use the [Issues](https://github.com/eead-csic-eesa/fingerPro/issues) page or report them to lizaga.ivan10@gmail.com.
+This software has been improved by the questions, suggestions, and bug reports of the user community. If you have any comments, please use the [Issues](https://github.com/eead-csic-eesa/fingerPro/issues) page or report them to lizaga.ivan10@gmail.com.
 
 ## Related research
 - Combining geochemistry and [isotopic tracers](https://www.sciencedirect.com/science/article/pii/S0048969722019271?via%3Dihub#f0040)
