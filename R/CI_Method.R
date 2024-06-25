@@ -1,6 +1,6 @@
 #' Conservativeness Index (CI)
 #'
-#' The function quantify the predictions of each individual tracer in your dataset and calculate the CI value of each tracer.
+#' The function quantify the predictions of each individual tracer in your dataset and calculate the CI value of each tracer for 2S, 3S and 4S.
 #'
 #' @param data Data frame containing sediment source and mixtures
 #' @param points Number of solutions per tracer
@@ -11,361 +11,453 @@
 #'
 #' @export
 #'  
-  CI_Method <- function(data, points = 2000, Means = F, seed = 123456L)
-  {
-    set.seed(seed)
+CI_Method <- function(data, points = 2000, Means = T, triangles = "virtual", seed = 123456L)
+ {
+  set.seed(seed)
+  
+  source_n <- nrow(inputSource(data))
+  system.time({
     
-    sources <- nrow(inputSource(data))
-    
-    if (sources == 3) {
-      system.time({
+    if (source_n == 2) ###########################################################################################
+    {
+      if (Means == T) {
+        sources1 <- data[-nrow(data), c(3:ncol(data))]
+        id_sources <- (1:(nrow(data) - 1))
+        id <- paste('S', id_sources, sep = '')
+        sources <- cbind(id, sources1)
+        mixtures <- inputSample(data[, c(1:((ncol(data) / 2) + 1))])
         
-        # It does everything after saving the df in a list because it is prepared for run it in a loop of several df
-        # Check when using lists instead of individual datasets
-        data_l <- list()
-        data_l[[1]] <- data
-        
-        results_list <- list()
-        for (ix in 1:length(data_l)) {
-          data <- data_l[[ix]]
-          if (Means == T) {
-          ######### Uncheck when working with mean and SD ##################################
-          sources1 <- data[-nrow(data),c(3:ncol(data))] 
-          id_sources <- (1:(nrow(data)-1))
-          id <- paste('S',id_sources, sep='')
-          sources <- cbind(id, sources1)
-          mixtures <- inputSample(data[,c(1:((ncol(data)/2)+1))])
-          
-          results <- list()
-          for (i0 in 0:(((ncol(data)+1)/2) - 3)) {
-            # results[[i0 + 1]] <- triangles_random_c(sources, mixtures, i0, 2000, 123456)
+        results <- list()
+        for (i0 in 0:(((ncol(data) + 1) / 2) - 3)) {
+            if (triangles == "virtual") {
+              results[[i0 + 1]] <- triangles_virtual_c(sources, mixtures, i0, points, seed)
+            } else if (triangles == "random") {
+              results[[i0 + 1]] <- triangles_random_c(sources, mixtures, i0, points, seed)
+            } else {
+              warning("Not applicable")
+            }
+        }
+      } else {
+        ############################################
+        sources  <- inputSource(data)
+        mixtures <- inputSample(data)
+        ###########################################
+        results <- list()
+        for (i0 in 0:(ncol(data) - 3)) {
+          if (triangles == "virtual") {
             results[[i0 + 1]] <- triangles_virtual_c(sources, mixtures, i0, points, seed)
-            }
+          } else if (triangles == "random") {
+            results[[i0 + 1]] <- triangles_random_c(sources, mixtures, i0, points, seed)
           } else {
-          # ###########################################
-          sources <- inputSource(data)
-          mixtures <- inputSample(data)
-          ###########################################
-                  results <- list()
-          for (i0 in 0:(ncol(data)-3)) {
-            # results[[i0+1]] <- triangles_random_c(sources, mixtures, i0, 2000, 123456)
-            results[[i0+1]] <- triangles_virtual_c(sources, mixtures, i0, points, seed)
-            }
+            warning("Not applicable")
+          }
+        }
+      }
+      for (i1 in 1:length(results)) {
+        results[[i1]][, 3] <- as.numeric(as.character(results[[i1]][, 3]))
+        results[[i1]][, 4] <- as.numeric(as.character(results[[i1]][, 4]))
+      }
+      
+      
+      # Prepare data for the CI calculation
+      ################################################################
+      # Removing those out of 0 - 1
+      mn_CI <- list() 
+      for (i2 in 1:length(results)) {
+        new_CI <- results[[i2]][ 
+          results[[i2]][,3] > -0.1 & results[[i2]][,3] < 1.1 &
+            results[[i2]][,4] > -0.1 & results[[i2]][,4] < 1.1  , ]
 
-          }
-          for (i1 in 1:length(results)) {
-            results[[i1]][, 3] <- as.numeric(as.character(results[[i1]][, 3]))
-            results[[i1]][, 4] <- as.numeric(as.character(results[[i1]][, 4]))
-            results[[i1]][, 5] <- as.numeric(as.character(results[[i1]][, 5]))
-          }
-          results_list[[ix]] <- results
-        }
-        # distance equation
-        ################################################################
-        d <-list()
-        d1 <-list()
-        for (ix in 1:length(data_l)) {
-          for (i2 in 1:length(results)) {
-            results_list1 <- results_list[[ix]] 
-            d1[[i2]] <- (results_list1[[i2]]$w.S1-1/3)*(results_list1[[i2]]$w.S1-1/3)+
-              (results_list1[[i2]]$w.S2-1/3)*(results_list1[[i2]]$w.S2-1/3)+
-              (results_list1[[i2]]$w.S3-1/3)*(results_list1[[i2]]$w.S3-1/3)#+
-          }
-          d[[ix]] <-  d1
-        } 
-        ################################################################
-        results_d <- list()
-        results_d1 <- list()
-        for (ix in 1:length(data_l)) {
-          for (i3 in 1:length(results)){ 
-            results_list1 <- results_list[[ix]]
-            results_d1[[i3]] <- cbind(results_list1[[i3]],d[[ix]][[i3]])
-            names(results_d1[[i3]])[(ncol(results_list1[[i3]])+1)] <- "d"
-          }
-          results_d[[ix]] <- results_d1
-        }
-        # Extract percentile data 25-26 and compute the median
-        ################################################################
-        x0 <- list()
-        x1 <- list()
-        x2 <- list()
-        x3 <- list()
-        x4 <- list()
-        for (ix in 1:length(data_l)) {
-          for (i4 in 1:length(results)) {
-            x0[[i4]]<- results_d[[ix]][[i4]][order(results_d[[ix]][[i4]]$d),]
-            x1[[i4]] <- as.integer(nrow(x0[[i4]])*0.25)
-            x2[[i4]] <- as.integer(nrow(x0[[i4]])*0.26)
-            x3[[i4]] <- x0[[i4]][c(x1[[i4]]:x2[[i4]]),]
-          }
-          x4[[ix]] <- x3
-        }
-        # Calculate the CI
-        ################################################################ 
-        number_interval_25_26 <- sapply(x4[[1]][1], nrow)
-        CI_T <- list() 
-        CI_L <- list()
-        CI_p25_p26 <- list()
-        for (ix in 1:length(data_l)) {
-          for (i5 in 1:length(results)) {
-            for (i6 in 1:number_interval_25_26) { x4[[ix]][i6]
-              CI = 0
-              nc = 0
-              w = x4[[ix]][[i5]][i6,]$w.S1
-              if (w < 0) {
-                nc = -w
-              } else if (w > 1) {
-                nc = w - 1
-              }
-              CI = CI + nc ^ 2
-              
-              nc = 0
-              w = x4[[ix]][[i5]][i6,]$w.S2
-              if (w < 0) {
-                nc = -w
-              } else if (w > 1) {
-                nc = w - 1
-              }
-              CI = CI + nc ^ 2
-              
-              nc = 0
-              w = x4[[ix]][[i5]][i6,]$w.S3
-              if (w < 0) {
-                nc = -w
-              } else if (w > 1) {
-                nc = w - 1
-              }
-              
-              CI_p25_p26[[i6]] = CI + nc ^ 2 
-            } 
-            CI_T[[i5]] <- CI_p25_p26
-          }
-          CI_L[[ix]] <- CI_T
-        }
+        mn_CI[[i2]] <-  colMeans(new_CI[, c(3:4)])
+      }
+      
+      CI_new <- list()
+      CI_new0 <- c()
+      for (i3 in 1:length(results)) {
+        CI_new0      <- results[[i3]][3] - mn_CI[[i3]][1] + 1 / source_n
+        CI_new0[2]   <- results[[i3]][4] - mn_CI[[i3]][2] + 1 / source_n
+        CI_new0[3]   <- 1 #tmp
+        CI_new0[4]   <- 1 #tmp
         
-        CI_def  <- list()
-        CI_def1 <- list()
-        CI_def2 <- list()
-        CI_df   <- list()
-        CI_med  <- list()
-        for(i7 in 1:length(data_l)){
-          for(i8 in 1:length(results)){
-            for(i9 in 1:number_interval_25_26){
-              CI_def[[i9]] = -sqrt(as.numeric(CI_L[[i7]][[i8]][i9]))
-            }
-            CI_def2[[i8]] = as.numeric(CI_def)
-          }
-          CI_def1[[i7]] <- CI_def2
-          CI_df <- do.call("cbind",CI_def1[[i7]])
-          CI_med[[i7]] <- apply(CI_df,2,median)
-        }   
+        CI_new[[i3]] <- CI_new0[, c(3, 4, 1, 2)] # forma cutre
         
-        ################################################################
-        CI_R2 <- list()
-        CI_R <- list()
-        for (ix in 1:length(data_l)) {
-          CI_R0 <- as.data.frame(do.call("cbind", CI_med))
-          if (Means == T) {
-            names_CI_R <- names(data[3:((ncol(data)+1)/2)])
-            names_CI_R <- as.data.frame(names_CI_R)
-            CI_R2 <- cbind(names_CI_R, CI_R0)
-          
+        # Loop to prevent NA when no solutions are inside the range
+        if (is.na(CI_new[[i3]][1, 3])|is.na(CI_new[[i3]][1, 4])) {
+          CI_new[[i3]][, c(3, 4)] <- c(-1, -1)
+        } else {
+          CI_new[[i3]] <- CI_new[[i3]]
+        }
+      }
+      
+      # New CI index calculation (distance equation)
+      ################################################################
+      prct_in <- list()
+      for (i4 in 1:length(results)) {
+        tmp <- CI_new[[i4]][ 
+            CI_new[[i4]][,3] > 0 & CI_new[[i4]][,3] < 1 &
+            CI_new[[i4]][,4] > 0 & CI_new[[i4]][,4] < 1  , ]
+        prct_in[[i4]] <-  nrow(tmp)/points*100
+      }
+      tmp1 <- do.call("rbind", prct_in)
+      
+      for (i3 in 1:length(results)) {
+        CI_new0      <- results[[i3]][3]
+        CI_new0[2]   <- results[[i3]][4]
+        CI_new0[3]   <- 1 #tmp
+        CI_new0[4]   <- 1 #tmp
+        
+        CI_new[[i3]] <- CI_new0[, c(3, 4, 1, 2)] # forma cutre
+        
+        # Loop to prevent NA when no solutions are inside the range
+        if (is.na(CI_new[[i3]][1, 3])|is.na(CI_new[[i3]][1, 4])) {
+          CI_new[[i3]][, c(3, 4)] <- c(-1, -1)
+        } else {
+          CI_new[[i3]] <- CI_new[[i3]]
+        }
+      }
+      
+    } else if (source_n == 3) ###########################################################################################
+    {
+      if (Means == T) {
+        sources1 <- data[-nrow(data), c(3:ncol(data))]
+        id_sources <- (1:(nrow(data) - 1))
+        id <- paste('S', id_sources, sep = '')
+        sources <- cbind(id, sources1)
+        mixtures <- inputSample(data[, c(1:((ncol(data) / 2) + 1))])
+        
+        results <- list()
+        for (i0 in 0:(((ncol(data) + 1) / 2) - 3)) {
+          if (triangles == "virtual") {
+            results[[i0 + 1]] <- triangles_virtual_c(sources, mixtures, i0, points, seed)
+          } else if (triangles == "random") {
+            results[[i0 + 1]] <- triangles_random_c(sources, mixtures, i0, points, seed)
           } else {
-            names_CI_R <- names(data[3:ncol(data)])
-            names_CI_R <- as.data.frame(names_CI_R)
-            CI_R2 <- cbind(names_CI_R, CI_R0)
+            warning("Not applicable")
           }
         }
-        
-        results$DB <- data # Include the analysed dataset
-        results$CI <- CI_R2 # Include CI index
-        
-        return(results)
-      })
-     
-    } else if (sources == 4)	{
-      system.time({
-        data_l <- list()
-        data_l[[1]] <- data
-        
-        results_list <- list()
-        for (ix in 1:length(data_l)) {
-          data <- data_l[[ix]]
-          if (Means == T) {
-            ######### When working with mean and SD ##################################
-            sources <- inputSource(data)
-            sources <- sources[,c(1:(ncol(sources)/2))]
-            mixtures <- inputSample(data)
-            mixtures <- mixtures[,c(1:(ncol(mixtures)/2))]
-            
-            results <- list()
-            for (i0 in 0:((ncol(data)/2)-2)) {
-              # results[[i0+1]] <- triangles_random_c(sources, mixtures, i0, 2000, 123456)
-              results[[i0 + 1]] <-
-                triangles_virtual_c(sources, mixtures, i0, points, seed)
-            }
-            
-          } else if (Means == F) {
-            ######### When working with raw data ##################################
-            sources <- inputSource(data)
-            mixtures <- inputSample(data)
-  
-            results <- list()
-            for (i0 in 0:(ncol(data) - 3)) {
-              # results[[i0+1]] <- triangles_random_c(sources, mixtures, i0, 2000, 123456)
-              results[[i0 + 1]] <-
-                triangles_virtual_c(sources, mixtures, i0, points, seed)
-            }
+      } else {
+        ############################################
+        sources  <- inputSource(data)
+        mixtures <- inputSample(data)
+        ###########################################
+        results <- list()
+        for (i0 in 0:(ncol(data) - 3)) {
+          if (triangles == "virtual") {
+            results[[i0 + 1]] <- triangles_virtual_c(sources, mixtures, i0, points, seed)
+          } else if (triangles == "random") {
+            results[[i0 + 1]] <- triangles_random_c(sources, mixtures, i0, points, seed)
+          } else {
+            warning("Not applicable")
           }
-          
-  
-          for (i1 in 1:length(results)) {
-            results[[i1]][, 3] <- as.numeric(as.character(results[[i1]][, 3]))
-            results[[i1]][, 4] <- as.numeric(as.character(results[[i1]][, 4]))
-            results[[i1]][, 5] <- as.numeric(as.character(results[[i1]][, 5]))
-            #Uncheck when using 4 sources
-            results[[i1]][, 6] <- as.numeric(as.character(results[[i1]][, 6]))
-          }
-          results_list[[ix]] <- results
         }
-        ################################################################
-        d <- list()
-        d1 <- list()
-        for (ix in 1:length(data_l)) {
-          for (i2 in 1:length(results)) {
-            results_list1 <- results_list[[ix]]
-            d1[[i2]] <-
-              (results_list1[[i2]]$w.S1 - 1 / 4) * (results_list1[[i2]]$w.S1 - 1 / 4) +
-              (results_list1[[i2]]$w.S2 - 1 / 4) * (results_list1[[i2]]$w.S2 - 1 / 4) +
-              (results_list1[[i2]]$w.S3 - 1 / 4) * (results_list1[[i2]]$w.S3 - 1 / 4)#+
-            #Uncheck when using 4 sources
-            (results_list1[[i2]]$w.S4-1/4)*(results_list1[[i2]]$w.S4-1/4)
-          }
-          d[[ix]] <-  d1
+      }
+      for (i1 in 1:length(results)) {
+        results[[i1]][, 3] <- as.numeric(as.character(results[[i1]][, 3]))
+        results[[i1]][, 4] <- as.numeric(as.character(results[[i1]][, 4]))
+        results[[i1]][, 5] <- as.numeric(as.character(results[[i1]][, 5]))
+      }
+    
+    
+    # Prepare data for the CI calculation
+    ################################################################
+    # Removing those out of 0 - 1
+    mn_CI <- list() 
+    for (i2 in 1:length(results)) {
+      new_CI <- results[[i2]][ 
+          results[[i2]][,3] > -0.1 & results[[i2]][,3] < 1.1 &
+          results[[i2]][,4] > -0.1 & results[[i2]][,4] < 1.1 &
+          results[[i2]][,5] > -0.1 & results[[i2]][,5] < 1.1  , ]
+
+      mn_CI[[i2]] <-  colMeans(new_CI[, c(3:5)])
+    }
+    
+    CI_new <- list()
+    CI_new0 <- c()
+    for (i3 in 1:length(results)) {
+      CI_new0      <- results[[i3]][3] - mn_CI[[i3]][1] + 1 / source_n
+      CI_new0[2]   <- results[[i3]][4] - mn_CI[[i3]][2] + 1 / source_n
+      CI_new0[3]   <- results[[i3]][5] - mn_CI[[i3]][3] + 1 / source_n
+      CI_new0[4]   <- 1 #tmp
+      CI_new0[5]   <- 1 #tmp
+      
+      CI_new[[i3]] <- CI_new0[, c(4, 5, 1, 2, 3)] # forma cutre
+      
+      # Loop to prevent NA when no solutions are inside the range
+      if (is.na(CI_new[[i3]][1, 3])|is.na(CI_new[[i3]][1, 5])) {
+        CI_new[[i3]][, c(3, 4, 5)] <- c(-1, -1, -1)
+      } else {
+        CI_new[[i3]] <- CI_new[[i3]]
+      }
+    }
+   
+    # New CI index calculation (distance equation)
+    ################################################################
+    prct_in <- list()
+    for (i4 in 1:length(results)) {
+      tmp <- CI_new[[i4]][ 
+          CI_new[[i4]][,3] > 0 & CI_new[[i4]][,3] < 1 &
+          CI_new[[i4]][,4] > 0 & CI_new[[i4]][,4] < 1 &
+          CI_new[[i4]][,5] > 0 & CI_new[[i4]][,5] < 1  , ]
+      prct_in[[i4]] <-  nrow(tmp)/points*100
+    }
+    tmp1 <- do.call("rbind", prct_in)
+    
+    for (i3 in 1:length(results)) {
+      CI_new0      <- results[[i3]][3]
+      CI_new0[2]   <- results[[i3]][4]
+      CI_new0[3]   <- results[[i3]][5]
+      CI_new0[4]   <- 1 #tmp
+      CI_new0[5]   <- 1 #tmp
+      
+      CI_new[[i3]] <- CI_new0[, c(4, 5, 1, 2, 3)] # forma cutre
+      
+      # Loop to prevent NA when no solutions are inside the range
+      if (is.na(CI_new[[i3]][1, 3])|is.na(CI_new[[i3]][1, 5])) {
+        CI_new[[i3]][, c(3, 4, 5)] <- c(-1, -1, -1)
+      } else {
+        CI_new[[i3]] <- CI_new[[i3]]
+      }
+    }
+    
+  } else if (source_n == 4)	###########################################################################################
+    {
+    if (Means == T) {
+      sources1 <- data[-nrow(data), c(3:ncol(data))]
+      id_sources <- (1:(nrow(data) - 1))
+      id <- paste('S', id_sources, sep = '')
+      sources <- cbind(id, sources1)
+      mixtures <- inputSample(data[, c(1:((ncol(data) / 2) + 1))])
+      
+      results <- list()
+      for (i0 in 0:(((ncol(data) + 1) / 2) - 3)) {
+        if (triangles == "virtual") {
+          results[[i0 + 1]] <- triangles_virtual_c(sources, mixtures, i0, points, seed)
+        } else if (triangles == "random") {
+          results[[i0 + 1]] <- triangles_random_c(sources, mixtures, i0, points, seed)
+        } else {
+          warning("Not applicable")
         }
-        ################################################################
-        results_d <- list()
-        results_d1 <- list()
-        for (ix in 1:length(data_l)) {
-          for (i3 in 1:length(results)) {
-            results_list1 <- results_list[[ix]]
-            results_d1[[i3]] <- cbind(results_list1[[i3]], d[[ix]][[i3]])
-            names(results_d1[[i3]])[(ncol(results_list1[[i3]]) + 1)] <-
-              "d"
-          }
-          results_d[[ix]] <- results_d1
-        }
-        ################################################################
-        x0 <- list()
-        x1 <- list()
-        x2 <- list()
-        x3 <- list()
-        x4 <- list()
-        for (ix in 1:length(data_l)) {
-          for (i4 in 1:length(results)) {
-            x0[[i4]] <- results_d[[ix]][[i4]][order(results_d[[ix]][[i4]]$d), ]
-            x1[[i4]] <- as.integer(nrow(x0[[i4]]) * 0.25)
-            x2[[i4]] <- as.integer(nrow(x0[[i4]]) * 0.26)
-            x3[[i4]] <- x0[[i4]][c(x1[[i4]]:x2[[i4]]), ]
-            # x3[[i4]]<- results_d[[ix]][[i4]][order(results_d[[ix]][[i4]]$d),]
-            #  x3[[i4]] <- as.integer(nrow(x3[[i4]])*0.5)
-            #   x4[[i4]] <- x0[[i4]][x3[[i4]],]
-          }
-          x4[[ix]] <- x3
-        }
-        ################################################################
-        number_interval_25_26 <- sapply(x4[[1]][1], nrow)
-        CI_T <- list()
-        CI_L <- list()
-        CI_p25_p26 <- list()
-        for (ix in 1:length(data_l)) {
-          for (i5 in 1:length(results)) {
-            for (i6 in 1:number_interval_25_26) {
-              x4[[ix]][i6]
-              CI = 0
-              nc = 0
-              w = x4[[ix]][[i5]][i6, ]$w.S1
-              if (w < 0) {
-                nc = -w
-              } else if (w > 1) {
-                nc = w - 1
-              }
-              CI = CI + nc ^ 2
-              
-              nc = 0
-              w = x4[[ix]][[i5]][i6, ]$w.S2
-              if (w < 0) {
-                nc = -w
-              } else if (w > 1) {
-                nc = w - 1
-              }
-              CI = CI + nc ^ 2
-              
-              nc = 0
-              w = x4[[ix]][[i5]][i6, ]$w.S3
-              if (w < 0) {
-                nc = -w
-              } else if (w > 1) {
-                nc = w - 1
-              }
-              CI = CI + nc ^ 2
-              
-              #Uncheck when using 4 sources
-              nc = 0
-              w = x4[[ix]][[i5]][i6,]$w.S4
-              if (w < 0) {
-                nc = -w
-              } else if (w > 1) {
-                nc = w - 1
-              }
-              
-              CI_p25_p26[[i6]] = CI + nc ^ 2
-            }
-            CI_T[[i5]] <- CI_p25_p26
-          }
-          CI_L[[ix]] <- CI_T
-        }
-        
-        CI_def  <- list()
-        CI_def1 <- list()
-        CI_def2 <- list()
-        CI_df   <- list()
-        CI_med  <- list()
-        for (i7 in 1:length(data_l)) {
-          for (i8 in 1:length(results)) {
-            for (i9 in 1:number_interval_25_26) {
-              CI_def[[i9]] = -sqrt(as.numeric(CI_L[[i7]][[i8]][i9]))
-            }
-            CI_def2[[i8]] = as.numeric(CI_def)
-          }
-          CI_def1[[i7]] <- CI_def2
-          CI_df <- do.call("cbind", CI_def1[[i7]])
-          CI_med[[i7]] <- apply(CI_df, 2, median)
-        }
-        
-        ################################################################
-        CI_R2 <- list()
-        CI_R <- list()
-        for (ix in 1:length(data_l)) {
-          CI_R0 <- as.data.frame(do.call("cbind", CI_med))
-          
-          if (Means == T) {
-            names_CI_R <- names(data[3:round((ncol(data)/2))])
-            }
-          else if (Means == F) {
-          names_CI_R <- names(data[3:ncol(data)])
-            }
-          
-             names_CI_R <- as.data.frame(names_CI_R)
-          CI_R2 <- cbind(names_CI_R, CI_R0)
-        }
-        
-        results$DB <- data # Include the analysed dataset
-        results$CI <- CI_R2 # Include CI index   
-        
-        return(results)
-      })
+      }
     } else {
-      print("ERROR: not implemented, please, contact code developers")
+      ############################################
+      sources  <- inputSource(data)
+      mixtures <- inputSample(data)
+      ###########################################
+      results <- list()
+      for (i0 in 0:(ncol(data)-3)) {
+        if (triangles == "virtual") {
+          results[[i0 + 1]] <- triangles_virtual_c(sources, mixtures, i0, points, seed)
+        } else if (triangles == "random") {
+          results[[i0 + 1]] <- triangles_random_c(sources, mixtures, i0, points, seed)
+        } else {
+          warning("Not applicable")
+        }
+      }
+      }
+      for (i1 in 1:length(results)) {
+        results[[i1]][, 3] <- as.numeric(as.character(results[[i1]][, 3]))
+        results[[i1]][, 4] <- as.numeric(as.character(results[[i1]][, 4]))
+        results[[i1]][, 5] <- as.numeric(as.character(results[[i1]][, 5]))
+        results[[i1]][, 6] <- as.numeric(as.character(results[[i1]][, 6]))
+      }
+
+  # Prepare data for the CI calculation
+  ################################################################
+  # Removing those out of 0 - 1
+      mn_CI <- list() 
+      for (i2 in 1:length(results)) {
+        new_CI <- results[[i2]][ 
+            results[[i2]][,3] > -0.1 & results[[i2]][,3] < 1.1 &
+            results[[i2]][,4] > -0.1 & results[[i2]][,4] < 1.1 &
+            results[[i2]][,5] > -0.1 & results[[i2]][,5] < 1.1 &
+            results[[i2]][,6] > -0.1 & results[[i2]][,6] < 1.1  , ]
+
+          mn_CI[[i2]] <-  colMeans(new_CI[, c(3:6)])
+      }
+    
+  CI_new <- list()
+  CI_new0 <- c()
+    for (i3 in 1:length(results)) {
+        CI_new0      <- results[[i3]][3] - mn_CI[[i3]][1] + 1 / source_n
+        CI_new0[2]   <- results[[i3]][4] - mn_CI[[i3]][2] + 1 / source_n
+        CI_new0[3]   <- results[[i3]][5] - mn_CI[[i3]][3] + 1 / source_n
+        CI_new0[4]   <- results[[i3]][6] - mn_CI[[i3]][4] + 1 / source_n
+        CI_new0[5]   <- 1 #tmp
+        CI_new0[6]   <- 1 #tmp
+        
+      CI_new[[i3]] <- CI_new0[, c(5, 6, 1, 2, 3, 4)] # forma cutre
+      
+      # Loop to prevent NA when no solutions are inside the range
+      if (is.na(CI_new[[i3]][1, 3])|is.na(CI_new[[i3]][1, 6])) {
+          CI_new[[i3]][, c(3, 4, 5, 6)] <- c(-1, -1, -1, -1)
+      } else {
+          CI_new[[i3]] <- CI_new[[i3]]
+      }
+    }
+
+  # New CI index calculation (distance equation)
+  ################################################################
+    prct_in <- list()
+    for (i4 in 1:length(results)) {
+      tmp <- CI_new[[i4]][ 
+             CI_new[[i4]][,3] > 0 & CI_new[[i4]][,3] < 1 &
+             CI_new[[i4]][,4] > 0 & CI_new[[i4]][,4] < 1 &
+             CI_new[[i4]][,5] > 0 & CI_new[[i4]][,5] < 1 &
+             CI_new[[i4]][,6] > 0 & CI_new[[i4]][,6] < 1  , ]
+      prct_in[[i4]] <-  nrow(tmp)/points*100
+    }
+    tmp1 <- do.call("rbind", prct_in)
+
+    for (i3 in 1:length(results)) {
+        CI_new0      <- results[[i3]][3]
+        CI_new0[2]   <- results[[i3]][4]
+        CI_new0[3]   <- results[[i3]][5]
+        CI_new0[4]   <- results[[i3]][6]
+        CI_new0[5]   <- 1 #tmp
+        CI_new0[6]   <- 1 #tmp
+        
+      CI_new[[i3]] <- CI_new0[, c(5, 6, 1, 2, 3, 4)] # forma cutre
+      
+      # Loop to prevent NA when no solutions are inside the range
+      if (is.na(CI_new[[i3]][1, 3])|is.na(CI_new[[i3]][1, 6])) {
+          CI_new[[i3]][, c(3, 4, 5, 6)] <- c(-1, -1, -1, -1)
+      } else {
+          CI_new[[i3]] <- CI_new[[i3]]
+      }
+    }
+    
+    } else if (source_n == 5)	####################################################################################################
+      {
+    if (Means == T) {
+      sources1 <- data[-nrow(data), c(3:ncol(data))]
+      id_sources <- (1:(nrow(data) - 1))
+      id <- paste('S', id_sources, sep = '')
+      sources <- cbind(id, sources1)
+      mixtures <- inputSample(data[, c(1:((ncol(data) / 2) + 1))])
+      
+      results <- list()
+      for (i0 in 0:(((ncol(data) + 1) / 2) - 3)) {
+        if (triangles == "virtual") {
+          results[[i0 + 1]] <- triangles_virtual_c(sources, mixtures, i0, points, seed)
+        } else if (triangles == "random") {
+          results[[i0 + 1]] <- triangles_random_c(sources, mixtures, i0, points, seed)
+        } else {
+          warning("Not applicable")
+        }
+      }
+    } else {
+      ############################################
+      sources <- inputSource(data)
+      mixtures <- inputSample(data)
+      ###########################################
+      results <- list()
+      for (i0 in 0:(ncol(data) - 3)) {
+        if (triangles == "virtual") {
+          results[[i0 + 1]] <- triangles_virtual_c(sources, mixtures, i0, points, seed)
+        } else if (triangles == "random") {
+          results[[i0 + 1]] <- triangles_random_c(sources, mixtures, i0, points, seed)
+        } else {
+          warning("Not applicable")
+        }
+      }
+    }
+    for (i1 in 1:length(results)) {
+      results[[i1]][, 3] <- as.numeric(as.character(results[[i1]][, 3]))
+      results[[i1]][, 4] <- as.numeric(as.character(results[[i1]][, 4]))
+      results[[i1]][, 5] <- as.numeric(as.character(results[[i1]][, 5]))
+      results[[i1]][, 6] <- as.numeric(as.character(results[[i1]][, 6]))
+      results[[i1]][, 7] <- as.numeric(as.character(results[[i1]][, 7]))
+    }
+
+  
+  # Prepare data for the CI calculation
+  ################################################################
+  # Removing those out of 0 - 1
+  mn_CI <- list() 
+  for (i2 in 1:length(results)) {
+    new_CI <- results[[i2]][ 
+        results[[i2]][,3] > -0.1 & results[[i2]][,3] < 1.1 &
+        results[[i2]][,4] > -0.1 & results[[i2]][,4] < 1.1 &
+        results[[i2]][,5] > -0.1 & results[[i2]][,5] < 1.1 &
+        results[[i2]][,6] > -0.1 & results[[i2]][,6] < 1.1 &
+        results[[i2]][,7] > -0.1 & results[[i2]][,7] < 1   , ]
+    mn_CI[[i2]] <-  colMeans(new_CI[, c(3:7)])
+  }
+  
+  CI_new <- list()
+  CI_new0 <- c()
+  for (i3 in 1:length(results)) {
+    CI_new0      <- results[[i3]][3] - mn_CI[[i3]][1] + 1 / source_n
+    CI_new0[2]   <- results[[i3]][4] - mn_CI[[i3]][2] + 1 / source_n
+    CI_new0[3]   <- results[[i3]][5] - mn_CI[[i3]][3] + 1 / source_n
+    CI_new0[4]   <- results[[i3]][6] - mn_CI[[i3]][4] + 1 / source_n
+    CI_new0[5]   <- results[[i3]][7] - mn_CI[[i3]][5] + 1 / source_n
+    CI_new0[6]   <- 1 #tmp
+    CI_new0[7]   <- 1 #tmp
+    CI_new[[i3]] <- CI_new0[, c(6, 7, 1, 2, 3, 4, 5)] # forma cutre
+    
+    # Loop to prevent NA when no solutions are inside the range
+    if (is.na(CI_new[[i3]][1, 3])|is.na(CI_new[[i3]][1, 6]|is.na(CI_new[[i3]][1, 7]))) {
+      CI_new[[i3]][, c(3, 4, 5, 6, 7)] <- c(-1, -1, -1, -1)
+    } else {
+      CI_new[[i3]] <- CI_new[[i3]]
     }
   }
+
+  # New CI index calculation (distance equation)
+  ################################################################
+    prct_in <- list()
+    for (i4 in 1:length(results)) {
+      tmp <- CI_new[[i4]][ 
+             CI_new[[i4]][, 3] > 0 & CI_new[[i4]][, 3] < 1 &
+             CI_new[[i4]][, 4] > 0 & CI_new[[i4]][, 4] < 1 &
+             CI_new[[i4]][, 5] > 0 & CI_new[[i4]][, 5] < 1 &
+             CI_new[[i4]][, 6] > 0 & CI_new[[i4]][, 6] < 1 &
+             CI_new[[i4]][, 7] > 0 & CI_new[[i4]][, 7] < 1  , ]
+  
+      prct_in[[i4]] <-  nrow(tmp) / points * 100
+    }
+    tmp1 <- do.call("rbind", prct_in)
+    
+  for (i3 in 1:length(results)) {
+    CI_new0      <- results[[i3]][3]
+    CI_new0[2]   <- results[[i3]][4]
+    CI_new0[3]   <- results[[i3]][5]
+    CI_new0[4]   <- results[[i3]][6]
+    CI_new0[5]   <- results[[i3]][7]
+    CI_new0[6]   <- 1 #tmp
+    CI_new0[7]   <- 1 #tmp
+    CI_new[[i3]] <- CI_new0[, c(6, 7, 1, 2, 3, 4, 5)] # forma cutre
+    
+    # Loop to prevent NA when no solutions are inside the range
+    if (is.na(CI_new[[i3]][1, 3])|is.na(CI_new[[i3]][1, 6]|is.na(CI_new[[i3]][1, 7]))) {
+      CI_new[[i3]][, c(3, 4, 5, 6, 7)] <- c(-1, -1, -1, -1)
+    } else {
+      CI_new[[i3]] <- CI_new[[i3]]
+    }
+  }
+    
+   } else 
+     {
+        print("ERROR: not implemented, please, contact code developers || lizaga.ivan10@gmail.com")
+      }
+  
+  # Prepare for output
+  ################################################################
+      if (Means == T) {
+        names_CI_R <- names(data[3:ceiling((ncol(data)/2))])# round function do 0.5 = 0
+      }
+      if (Means == F) {
+        names_CI_R <- names(data[3:ncol(data)])
+      }
+      
+      names_CI_R <- as.data.frame(names_CI_R)
+      CI <- cbind(names_CI_R, tmp1)
+      CI_new$DB <- data # add the database at the end
+      CI_new$CI <- CI   # add the CI index at the end
+      
+      return(CI_new)
+      
+  })
+}
+
