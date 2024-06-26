@@ -10,8 +10,6 @@
 #' 
 #' @export
 #' 
-
-# Function for Linear Discriminant Analysis (LDA) plot
 LDAPlot <- function(data, P3D = FALSE, text = FALSE, colors = NULL, interactive = FALSE) {
   # reorder factor levels in order of appearance
   data[, 2] <- factor(data[, 2], levels = unique(data[, 2]))
@@ -46,44 +44,36 @@ LDAPlot <- function(data, P3D = FALSE, text = FALSE, colors = NULL, interactive 
   
   # Perform LDA
   data.lda1$groups <- as.factor(s_groups)
-  data.lda <- lda(groups ~ ., data = data.lda1) 
+  data.lda <- MASS::lda(groups ~ ., data = data.lda1) 
   data.lda.pred <- predict(data.lda) 
   data.lda.temp <- data.frame(data.lda.pred$x, Sources = data.lda1$groups)
   
+  # Determine number of unique groups
+  num_groups <- length(unique(data.lda.temp$Sources))
+  
+  # Generate default colors if not provided
+  if (is.null(colors)) {
+    default_colors <- rainbow(num_groups)
+  } else {
+    if (length(colors) < num_groups) {
+      stop("Insufficient number of colors provided.")
+    }
+    default_colors <- colors
+  }
+  
   # Check if 3D plot is requested
   if (P3D == TRUE) {
-    # Check if custom colors are provided
-    if (!is.null(colors)) {
-      # Create a 3D scatter plot with custom colors and transparency
-      if (interactive == TRUE) {
-        plot <- plot_ly(data.lda.temp, x = ~LD1, y = ~LD2, z = ~LD3, type = "scatter3d", 
-                        mode = "markers", color = ~Sources, colors = colors, text = ~Sources,
-                        marker = list(size = 8, opacity = 0.7)) %>%
-          add_markers(opacity = 0.7)
-      } else {
-        plot <- with(data.lda.temp, scatter3d(LD1, LD2, LD3, revolution = 1, col = group_number, 
-                                              point.col = group_number, speed = 8, groups = Sources, 
-                                              bg.col = "white", model.summary = T, surface.alpha = 0.2, 
-                                              ellipsoid = TRUE, ellipsoid.alpha = 0.3, level = 0.8))
-      }
+    # Create a 3D scatter plot
+    if (interactive == TRUE) {
+      plot <- plot_ly(data.lda.temp, x = ~LD1, y = ~LD2, z = ~LD3, type = "scatter3d", 
+                      mode = "markers", color = ~Sources, colors = default_colors, text = ~Sources,
+                      marker = list(size = 8, opacity = 0.7)) %>%
+        add_markers()
     } else {
-      # Create a 3D scatter plot with default colors and transparency
-      if (interactive == TRUE) {
-        plot <- plot_ly(data.lda.temp, x = ~LD1, y = ~LD2, z = ~LD3, type = "scatter3d", 
-                mode = "markers", color = ~Sources, colors = colors, text = ~Sources,
-                marker = list(size = 8, opacity = 0.7)) %>%
-          add_markers() %>% add_ellipsoids(x = ~LD1, y = ~LD2, z = ~LD3,
-                         opacity = 0.3,     # Adjust the opacity of the ellipsoids
-                         line = list(color = "black"))  # Adjust the line color of the ellipsoids
-        
-        
-        
-      } else {
-        plot <- with(data.lda.temp, scatter3d(LD1, LD2, LD3, revolution = 1, col = group_number, 
-                                              point.col = group_number, speed = 8, groups = Sources, 
-                                              bg.col = "white", model.summary = T, surface.alpha = 0.2, 
-                                              ellipsoid = TRUE, ellipsoid.alpha = 0.3, level = 0.8))
-      }
+      plot <- with(data.lda.temp, scatter3d(LD1, LD2, LD3, col = group_number, 
+                                            point.col = group_number, speed = 8, groups = Sources, 
+                                            bg.col = "white", model.summary = TRUE, surface.alpha = 0.2, 
+                                            ellipsoid = TRUE, ellipsoid.alpha = 0.3, level = 0.8))
     }
   } else {
     # If 2D plot is requested
@@ -101,8 +91,8 @@ LDAPlot <- function(data, P3D = FALSE, text = FALSE, colors = NULL, interactive 
         stat_ellipse(type = "t", size = 1, alpha = 0.7, level = 0.9) + 
         ggtitle("LDA") + 
         theme(plot.title = element_text(hjust = 0.5)) +
-        scale_color_manual(values = colors) +   # Specify the colors
-        scale_fill_manual(values = colors)      # Specify the colors
+        scale_color_manual(values = default_colors) + 
+        scale_fill_manual(values = default_colors)
     } else {
       # Create a ggplot without text labels
       plot <- ggplot(data.lda.temp, aes(LD1, LD2, colour = Sources, fill = Sources)) + 
@@ -114,8 +104,8 @@ LDAPlot <- function(data, P3D = FALSE, text = FALSE, colors = NULL, interactive 
         stat_ellipse(type = "t", size = 1, alpha = 0.7, level = 0.9) + 
         ggtitle("LDA") + 
         theme(plot.title = element_text(hjust = 0.5)) +
-        scale_color_manual(values = colors) +   # Specify the colors
-        scale_fill_manual(values = colors)      # Specify the colors
+        scale_color_manual(values = default_colors) + 
+        scale_fill_manual(values = default_colors)
     }
   }
   
