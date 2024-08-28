@@ -207,7 +207,7 @@ head(crgeo)
 ![image](https://user-images.githubusercontent.com/30837036/136759634-d3ed9262-9cb8-4f0f-a9d1-36f7fbcbc60c.png)
 
 ```r
-# compute pairs/triplets (depending on your source numbers)
+# compute singles/pairs/triplets/quartets (depending on your source numbers 2-5 sources)
 pgeo <- pairs(sgeo, mgeo, iter = 1000, seed = 1234567)
 head(pgeo)
 	id        w1          w2           w3        Dw1        Dw2        Dw3  cons       Dmax
