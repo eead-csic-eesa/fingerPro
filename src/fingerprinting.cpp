@@ -50,6 +50,7 @@ double correct(double avg, double dev, int n)
 {
 	if( n > 1 )
 	{
+		// return avg + gsl_ran_tdist(rng, (double)(n-1)) * dev;
 		return avg + gsl_ran_tdist(rng, (double)(n-1)) * dev / sqrt((double)n);
 	}
 	return avg;
@@ -214,6 +215,12 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 	best.w = (double*) malloc( nsource * sizeof(double) );
 	best.gof1 = 0.0;
 	best.gof2 = 0.0;
+	
+	// central solution
+	double *cw = (double*) malloc( nsource * sizeof(double) );
+	// corrected mixture
+	double *cm = (double*) malloc( vars * sizeof(double) );
+
 	// Compute maximum values to normalize
 	for(i = 0 ; i < vars ; i++ )
 	{
@@ -260,7 +267,7 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 	for( i = 0 ; i < points ; i++ )
 	{
 		// repeat iter times to get probability distribution
-		for( ii = 0 ; ii < iter ; ii++ )
+		for( ii = -1 ; ii < iter ; ii++ )
 		{
 			// screen
 //			printf("\r                                            \r");
@@ -273,25 +280,33 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 
 			p.increment();
 		
-			if(ii == 1 || ii == 2)
+			if(ii == -1 || ii == 1 || ii == 2)
 			{
+				// keep original mixture
 				for( k = 0 ; k < vars ; k++ )
 				{
-					for( l = 0 ; l < nsource ; l++ )
-					{
-						source_c[l][k] = source[l][k];
-					}
+					cm[k] = point[i][k];
 				}
 			}
-			// compute corrected sources
 			else
 			{
+				// compute corrected sources
 				for( k = 0 ; k < vars ; k++ )
 				{
 					for( l = 0 ; l < nsource ; l++ )
 					{
 						source_c[l][k] = correct(source[l][k], source_d[l][k], source_n[l]);
 					}
+				}
+				// compute corrected mixture
+				for( k = 0 ; k < vars ; k++ )
+				{
+					sum = 0.0;
+					for( l = 0 ; l < nsource ; l++ )
+					{
+						sum = sum + source_c[l][k] * cw[l];
+					}
+					cm[k] = sum;
 				}
 			}
 
@@ -315,7 +330,10 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 				// explore unphysical solutions to then discard
 				for( k = 0 ; k < nsource ; k++ )
 				{
-					try1[k] = try1[k] * 2.0 - 1.0 / (double)nsource;
+					//try1[k] = try1[k] * 2.0 - 1.0 / (double)nsource;
+					//try1[k] = try1[k] * 4.0 - 3.0 / (double)nsource; //increasing explored area
+					//try1[k] = try1[k] * 6.0 - 5.0 / (double)nsource; //increasing explored area
+					try1[k] = try1[k] * 10.0 - 9.0 / (double)nsource; //increasing explored area
 				}
 
 				// measure error
@@ -327,16 +345,16 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 					for( l = 0 ; l < nsource ; l++ )
 					{
 						// Non corrected mean
-						//sum = sum + source[l][k] * try1[l];
+						sum = sum + source[l][k] * try1[l];
 
 						// Corrected mean
-						sum = sum + source_c[l][k] * try1[l];
+						//sum = sum + source_c[l][k] * try1[l];
 					}
 					// GOF1
-					gof1 = gof1 + fabs( point[i][k] - sum ) / ( max[k] - min[k] );
+					gof1 = gof1 + fabs( cm[k] - sum ) / ( max[k] - min[k] );
 
 					// GOF2
-					gof2 = gof2 + ( point[i][k] - sum ) * ( point[i][k] - sum ) / ( max[k] - min[k] ) / ( max[k] - min[k] );
+					gof2 = gof2 + ( cm[k] - sum ) * ( cm[k] - sum ) / ( max[k] - min[k] ) / ( max[k] - min[k] );
 				}
 				gof1 = 1.0 - gof1 / (double) vars;
 				gof2 = 1.0 - gof2 / (double) vars;
@@ -354,12 +372,23 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP samples, int trials=100, int iter=100
 
 			}
 
-			// print average and standar deviation values in the top
-			as<CharacterVector>(myList[0])[i*iter+ii] = i + 1;
-			as<CharacterVector>(myList[1])[i*iter+ii] = best.gof1;
-			for( j = 0 ; j < nsource ; j++ )
+			if(ii == -1)
 			{
-				as<CharacterVector>(myList[2+j])[i*iter+ii] = best.w[j];
+				// store central solution
+				for( j = 0 ; j < nsource ; j++ )
+				{
+					cw[j] = best.w[j];
+				}
+			}
+			else
+			{
+				// print average and standar deviation values in the top
+				as<CharacterVector>(myList[0])[i*iter+ii] = i + 1;
+				as<CharacterVector>(myList[1])[i*iter+ii] = best.gof1;
+				for( j = 0 ; j < nsource ; j++ )
+				{
+					as<CharacterVector>(myList[2+j])[i*iter+ii] = best.w[j];
+				}
 			}
 		}
 	}
@@ -1219,11 +1248,12 @@ Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP samples, int tracer=0, in
 	int *source_n;
 
 	double min0, max0;
-	double m1, m2, m3;
-	double s11, s21, s31, s41;
-	double s12, s22, s32, s42;
-	double s13, s23, s33, s43;
-	double det, w1, w2, w3, w4;
+	double m1, m2, m3, m4;
+	double s11, s21, s31, s41, s51;
+	double s12, s22, s32, s42, s52;
+	double s13, s23, s33, s43, s53;
+	double s14, s24, s34, s44, s54;
+	double det, w1, w2, w3, w4, w5;
 
 	// Number of variables
 	vars = dfp.size() - 1;
@@ -1250,8 +1280,8 @@ Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP samples, int tracer=0, in
 	}
 
 	// Check nsource
-	if (!(nsource == 3 || nsource == 4))
-	{
+	if (!(nsource == 2 || nsource == 3 || nsource == 4 || nsource == 5))
+	{		
 		stop("Number of sources not implemented");
 	}
 
@@ -1396,6 +1426,27 @@ Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP samples, int tracer=0, in
 				}
 			}
 
+			// test solutions	
+			if(nsource == 2)	
+			{	
+				// requested tracer	
+				s11 = source_c[0][tracer];	
+				s21 = source_c[1][tracer];	
+				m1  = point[i][tracer];	
+				det = s11 - s21;	
+				if(det != 0.0)	
+				{	
+					w1 = (m1 - s21) / det;	
+					w2 = 1.0 - w1;	
+					best.w[0] = w1;	
+					best.w[1] = w2;	
+				}	
+				else	
+				{	
+					best.w[0] = 0.0;	
+					best.w[1] = 0.0;	
+				}	
+			}
 			// test solutions
 			if(nsource == 3)
 			{
@@ -1517,7 +1568,79 @@ Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP samples, int tracer=0, in
 					best.w[3] = 0.0;
 				}
 			}
+			// test solutions
+			if(nsource == 5)
+			{
+				// requested tracer
+				s11 = source_c[0][tracer];
+				s21 = source_c[1][tracer];
+				s31 = source_c[2][tracer];
+				s41 = source_c[3][tracer];
+				s51 = source_c[4][tracer];
+				m1  = point[i][tracer];
 
+				// build random tracer
+				max0 = 0.0 ; min0 = 1.0;
+				s12 = gsl_rng_uniform(rng); if(s12 > max0){ max0 = s12; } if(s12 < min0){ min0 = s12; }
+				s22 = gsl_rng_uniform(rng); if(s22 > max0){ max0 = s22; } if(s22 < min0){ min0 = s22; }
+				s32 = gsl_rng_uniform(rng); if(s32 > max0){ max0 = s32; } if(s32 < min0){ min0 = s32; }
+				s42 = gsl_rng_uniform(rng); if(s42 > max0){ max0 = s42; } if(s42 < min0){ min0 = s42; }
+				s52 = gsl_rng_uniform(rng); if(s52 > max0){ max0 = s52; } if(s52 < min0){ min0 = s52; }
+				m2 = min0 + gsl_rng_uniform(rng) * (max0 - min0);
+
+				// build random tracer
+				max0 = 0.0 ; min0 = 1.0;
+				s13 = gsl_rng_uniform(rng); if(s13 > max0){ max0 = s13; } if(s13 < min0){ min0 = s13; }
+				s23 = gsl_rng_uniform(rng); if(s23 > max0){ max0 = s23; } if(s23 < min0){ min0 = s23; }
+				s33 = gsl_rng_uniform(rng); if(s33 > max0){ max0 = s33; } if(s33 < min0){ min0 = s33; }
+				s43 = gsl_rng_uniform(rng); if(s43 > max0){ max0 = s43; } if(s43 < min0){ min0 = s43; }
+				s53 = gsl_rng_uniform(rng); if(s53 > max0){ max0 = s53; } if(s53 < min0){ min0 = s53; }
+				m3 = min0 + gsl_rng_uniform(rng) * (max0 - min0);
+
+				// build random tracer
+				max0 = 0.0 ; min0 = 1.0;
+				s14 = gsl_rng_uniform(rng); if(s14 > max0){ max0 = s14; } if(s14 < min0){ min0 = s14; }
+				s24 = gsl_rng_uniform(rng); if(s24 > max0){ max0 = s24; } if(s24 < min0){ min0 = s24; }
+				s34 = gsl_rng_uniform(rng); if(s34 > max0){ max0 = s34; } if(s34 < min0){ min0 = s34; }
+				s44 = gsl_rng_uniform(rng); if(s44 > max0){ max0 = s44; } if(s44 < min0){ min0 = s44; }
+				s54 = gsl_rng_uniform(rng); if(s54 > max0){ max0 = s54; } if(s54 < min0){ min0 = s54; }
+				m4 = min0 + gsl_rng_uniform(rng) * (max0 - min0);
+
+				// maxima script
+				// M:matrix([1,1,1,1,1],[s11,s21,s31,s41,s51],[s12,s22,s32,s42,s52],[s13,s23,s33,s43,s53],[s14,s24,s34,s44,s54]);
+				// determinant(M);
+				// ratsimp(invert(M)*determinant(M));
+
+				det = s21*(s32*(s43*s54-s44*s53)-s42*(s33*s54-s34*s53)+(s33*s44-s34*s43)*s52)-s11*(s32*(s43*s54-s44*s53)-s42*(s33*s54-s34*s53)+(s33*s44-s34*s43)*s52)-s31*(s22*(s43*s54-s44*s53)-s42*(s23*s54-s24*s53)+(s23*s44-s24*s43)*s52)+s11*(s22*(s43*s54-s44*s53)-s42*(s23*s54-s24*s53)+(s23*s44-s24*s43)*s52)+s31*(s12*(s43*s54-s44*s53)-s42*(s13*s54-s14*s53)+(s13*s44-s14*s43)*s52)-s21*(s12*(s43*s54-s44*s53)-s42*(s13*s54-s14*s53)+(s13*s44-s14*s43)*s52)+s41*(s22*(s33*s54-s34*s53)-s32*(s23*s54-s24*s53)+(s23*s34-s24*s33)*s52)-s11*(s22*(s33*s54-s34*s53)-s32*(s23*s54-s24*s53)+(s23*s34-s24*s33)*s52)-s41*(s12*(s33*s54-s34*s53)-s32*(s13*s54-s14*s53)+(s13*s34-s14*s33)*s52)+s21*(s12*(s33*s54-s34*s53)-s32*(s13*s54-s14*s53)+(s13*s34-s14*s33)*s52)+s41*(s12*(s23*s54-s24*s53)-s22*(s13*s54-s14*s53)+(s13*s24-s14*s23)*s52)-s31*(s12*(s23*s54-s24*s53)-s22*(s13*s54-s14*s53)+(s13*s24-s14*s23)*s52)-(s22*(s33*s44-s34*s43)-s32*(s23*s44-s24*s43)+(s23*s34-s24*s33)*s42)*s51+(s12*(s33*s44-s34*s43)-s32*(s13*s44-s14*s43)+(s13*s34-s14*s33)*s42)*s51-(s12*(s23*s44-s24*s43)-s22*(s13*s44-s14*s43)+(s13*s24-s14*s23)*s42)*s51+(s12*(s23*s34-s24*s33)-s22*(s13*s34-s14*s33)+(s13*s24-s14*s23)*s32)*s51+s11*(s22*(s33*s44-s34*s43)-s32*(s23*s44-s24*s43)+(s23*s34-s24*s33)*s42)-s21*(s12*(s33*s44-s34*s43)-s32*(s13*s44-s14*s43)+(s13*s34-s14*s33)*s42)+s31*(s12*(s23*s44-s24*s43)-s22*(s13*s44-s14*s43)+(s13*s24-s14*s23)*s42)-(s12*(s23*s34-s24*s33)-s22*(s13*s34-s14*s33)+(s13*s24-s14*s23)*s32)*s41;
+	
+				if(det != 0.0)
+				{
+					w1 = m1*(((s22-s32)*s43+(s33-s23)*s42-s22*s33+s23*s32)*s54+((s32-s22)*s44+(s24-s34)*s42+s22*s34-s24*s32)*s53+((s23-s33)*s44+(s34-s24)*s43-s23*s34+s24*s33)*s52+(s22*s33-s23*s32)*s44+(s24*s32-s22*s34)*s43+(s23*s34-s24*s33)*s42)+m2*(((s31-s21)*s43+(s23-s33)*s41+s21*s33-s23*s31)*s54+((s21-s31)*s44+(s34-s24)*s41-s21*s34+s24*s31)*s53+((s33-s23)*s44+(s24-s34)*s43+s23*s34-s24*s33)*s51+(s23*s31-s21*s33)*s44+(s21*s34-s24*s31)*s43+(s24*s33-s23*s34)*s41)+m3*(((s21-s31)*s42+(s32-s22)*s41-s21*s32+s22*s31)*s54+((s31-s21)*s44+(s24-s34)*s41+s21*s34-s24*s31)*s52+((s22-s32)*s44+(s34-s24)*s42-s22*s34+s24*s32)*s51+(s21*s32-s22*s31)*s44+(s24*s31-s21*s34)*s42+(s22*s34-s24*s32)*s41)+((s21*s32-s22*s31)*s43+(s23*s31-s21*s33)*s42+(s22*s33-s23*s32)*s41)*s54+m4*(((s31-s21)*s42+(s22-s32)*s41+s21*s32-s22*s31)*s53+((s21-s31)*s43+(s33-s23)*s41-s21*s33+s23*s31)*s52+((s32-s22)*s43+(s23-s33)*s42+s22*s33-s23*s32)*s51+(s22*s31-s21*s32)*s43+(s21*s33-s23*s31)*s42+(s23*s32-s22*s33)*s41)+((s22*s31-s21*s32)*s44+(s21*s34-s24*s31)*s42+(s24*s32-s22*s34)*s41)*s53+((s21*s33-s23*s31)*s44+(s24*s31-s21*s34)*s43+(s23*s34-s24*s33)*s41)*s52+((s23*s32-s22*s33)*s44+(s22*s34-s24*s32)*s43+(s24*s33-s23*s34)*s42)*s51;
+		
+					w2 = m1*(((s32-s12)*s43+(s13-s33)*s42+s12*s33-s13*s32)*s54+((s12-s32)*s44+(s34-s14)*s42-s12*s34+s14*s32)*s53+((s33-s13)*s44+(s14-s34)*s43+s13*s34-s14*s33)*s52+(s13*s32-s12*s33)*s44+(s12*s34-s14*s32)*s43+(s14*s33-s13*s34)*s42)+m2*(((s11-s31)*s43+(s33-s13)*s41-s11*s33+s13*s31)*s54+((s31-s11)*s44+(s14-s34)*s41+s11*s34-s14*s31)*s53+((s13-s33)*s44+(s34-s14)*s43-s13*s34+s14*s33)*s51+(s11*s33-s13*s31)*s44+(s14*s31-s11*s34)*s43+(s13*s34-s14*s33)*s41)+m3*(((s31-s11)*s42+(s12-s32)*s41+s11*s32-s12*s31)*s54+((s11-s31)*s44+(s34-s14)*s41-s11*s34+s14*s31)*s52+((s32-s12)*s44+(s14-s34)*s42+s12*s34-s14*s32)*s51+(s12*s31-s11*s32)*s44+(s11*s34-s14*s31)*s42+(s14*s32-s12*s34)*s41)+((s12*s31-s11*s32)*s43+(s11*s33-s13*s31)*s42+(s13*s32-s12*s33)*s41)*s54+m4*(((s11-s31)*s42+(s32-s12)*s41-s11*s32+s12*s31)*s53+((s31-s11)*s43+(s13-s33)*s41+s11*s33-s13*s31)*s52+((s12-s32)*s43+(s33-s13)*s42-s12*s33+s13*s32)*s51+(s11*s32-s12*s31)*s43+(s13*s31-s11*s33)*s42+(s12*s33-s13*s32)*s41)+((s11*s32-s12*s31)*s44+(s14*s31-s11*s34)*s42+(s12*s34-s14*s32)*s41)*s53+((s13*s31-s11*s33)*s44+(s11*s34-s14*s31)*s43+(s14*s33-s13*s34)*s41)*s52+((s12*s33-s13*s32)*s44+(s14*s32-s12*s34)*s43+(s13*s34-s14*s33)*s42)*s51;
+
+					w3 = m1*(((s12-s22)*s43+(s23-s13)*s42-s12*s23+s13*s22)*s54+((s22-s12)*s44+(s14-s24)*s42+s12*s24-s14*s22)*s53+((s13-s23)*s44+(s24-s14)*s43-s13*s24+s14*s23)*s52+(s12*s23-s13*s22)*s44+(s14*s22-s12*s24)*s43+(s13*s24-s14*s23)*s42)+m2*(((s21-s11)*s43+(s13-s23)*s41+s11*s23-s13*s21)*s54+((s11-s21)*s44+(s24-s14)*s41-s11*s24+s14*s21)*s53+((s23-s13)*s44+(s14-s24)*s43+s13*s24-s14*s23)*s51+(s13*s21-s11*s23)*s44+(s11*s24-s14*s21)*s43+(s14*s23-s13*s24)*s41)+m3*(((s11-s21)*s42+(s22-s12)*s41-s11*s22+s12*s21)*s54+((s21-s11)*s44+(s14-s24)*s41+s11*s24-s14*s21)*s52+((s12-s22)*s44+(s24-s14)*s42-s12*s24+s14*s22)*s51+(s11*s22-s12*s21)*s44+(s14*s21-s11*s24)*s42+(s12*s24-s14*s22)*s41)+((s11*s22-s12*s21)*s43+(s13*s21-s11*s23)*s42+(s12*s23-s13*s22)*s41)*s54+m4*(((s21-s11)*s42+(s12-s22)*s41+s11*s22-s12*s21)*s53+((s11-s21)*s43+(s23-s13)*s41-s11*s23+s13*s21)*s52+((s22-s12)*s43+(s13-s23)*s42+s12*s23-s13*s22)*s51+(s12*s21-s11*s22)*s43+(s11*s23-s13*s21)*s42+(s13*s22-s12*s23)*s41)+((s12*s21-s11*s22)*s44+(s11*s24-s14*s21)*s42+(s14*s22-s12*s24)*s41)*s53+((s11*s23-s13*s21)*s44+(s14*s21-s11*s24)*s43+(s13*s24-s14*s23)*s41)*s52+((s13*s22-s12*s23)*s44+(s12*s24-s14*s22)*s43+(s14*s23-s13*s24)*s42)*s51;
+		
+					w4 = m1*(((s22-s12)*s33+(s13-s23)*s32+s12*s23-s13*s22)*s54+((s12-s22)*s34+(s24-s14)*s32-s12*s24+s14*s22)*s53+((s23-s13)*s34+(s14-s24)*s33+s13*s24-s14*s23)*s52+(s13*s22-s12*s23)*s34+(s12*s24-s14*s22)*s33+(s14*s23-s13*s24)*s32)+m2*(((s11-s21)*s33+(s23-s13)*s31-s11*s23+s13*s21)*s54+((s21-s11)*s34+(s14-s24)*s31+s11*s24-s14*s21)*s53+((s13-s23)*s34+(s24-s14)*s33-s13*s24+s14*s23)*s51+(s11*s23-s13*s21)*s34+(s14*s21-s11*s24)*s33+(s13*s24-s14*s23)*s31)+m3*(((s21-s11)*s32+(s12-s22)*s31+s11*s22-s12*s21)*s54+((s11-s21)*s34+(s24-s14)*s31-s11*s24+s14*s21)*s52+((s22-s12)*s34+(s14-s24)*s32+s12*s24-s14*s22)*s51+(s12*s21-s11*s22)*s34+(s11*s24-s14*s21)*s32+(s14*s22-s12*s24)*s31)+((s12*s21-s11*s22)*s33+(s11*s23-s13*s21)*s32+(s13*s22-s12*s23)*s31)*s54+m4*(((s11-s21)*s32+(s22-s12)*s31-s11*s22+s12*s21)*s53+((s21-s11)*s33+(s13-s23)*s31+s11*s23-s13*s21)*s52+((s12-s22)*s33+(s23-s13)*s32-s12*s23+s13*s22)*s51+(s11*s22-s12*s21)*s33+(s13*s21-s11*s23)*s32+(s12*s23-s13*s22)*s31)+((s11*s22-s12*s21)*s34+(s14*s21-s11*s24)*s32+(s12*s24-s14*s22)*s31)*s53+((s13*s21-s11*s23)*s34+(s11*s24-s14*s21)*s33+(s14*s23-s13*s24)*s31)*s52+((s12*s23-s13*s22)*s34+(s14*s22-s12*s24)*s33+(s13*s24-s14*s23)*s32)*s51;
+		
+					w5 = m1*(((s12-s22)*s33+(s23-s13)*s32-s12*s23+s13*s22)*s44+((s22-s12)*s34+(s14-s24)*s32+s12*s24-s14*s22)*s43+((s13-s23)*s34+(s24-s14)*s33-s13*s24+s14*s23)*s42+(s12*s23-s13*s22)*s34+(s14*s22-s12*s24)*s33+(s13*s24-s14*s23)*s32)+m2*(((s21-s11)*s33+(s13-s23)*s31+s11*s23-s13*s21)*s44+((s11-s21)*s34+(s24-s14)*s31-s11*s24+s14*s21)*s43+((s23-s13)*s34+(s14-s24)*s33+s13*s24-s14*s23)*s41+(s13*s21-s11*s23)*s34+(s11*s24-s14*s21)*s33+(s14*s23-s13*s24)*s31)+m3*(((s11-s21)*s32+(s22-s12)*s31-s11*s22+s12*s21)*s44+((s21-s11)*s34+(s14-s24)*s31+s11*s24-s14*s21)*s42+((s12-s22)*s34+(s24-s14)*s32-s12*s24+s14*s22)*s41+(s11*s22-s12*s21)*s34+(s14*s21-s11*s24)*s32+(s12*s24-s14*s22)*s31)+((s11*s22-s12*s21)*s33+(s13*s21-s11*s23)*s32+(s12*s23-s13*s22)*s31)*s44+m4*(((s21-s11)*s32+(s12-s22)*s31+s11*s22-s12*s21)*s43+((s11-s21)*s33+(s23-s13)*s31-s11*s23+s13*s21)*s42+((s22-s12)*s33+(s13-s23)*s32+s12*s23-s13*s22)*s41+(s12*s21-s11*s22)*s33+(s11*s23-s13*s21)*s32+(s13*s22-s12*s23)*s31)+((s12*s21-s11*s22)*s34+(s11*s24-s14*s21)*s32+(s14*s22-s12*s24)*s31)*s43+((s11*s23-s13*s21)*s34+(s14*s21-s11*s24)*s33+(s13*s24-s14*s23)*s31)*s42+((s13*s22-s12*s23)*s34+(s12*s24-s14*s22)*s33+(s14*s23-s13*s24)*s32)*s41;
+
+					best.w[0] = w1 / det;
+					best.w[1] = w2 / det;
+					best.w[2] = w3 / det;
+					best.w[3] = w4 / det;
+					best.w[4] = w5 / det;
+				}
+				else
+				{
+					best.w[0] = 0.0;
+					best.w[1] = 0.0;
+					best.w[2] = 0.0;
+					best.w[3] = 0.0;
+					best.w[4] = 0.0;
+				}
+			}
+			
 			// print average and standar deviation values in the top
 			as<CharacterVector>(myList[0])[i*iter+ii] = i + 1;
 			as<CharacterVector>(myList[1])[i*iter+ii] = 1.0;
@@ -1532,4 +1655,3 @@ Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP samples, int tracer=0, in
 	Rcpp::DataFrame dfout(myList);
 	return dfout;
 }
-
