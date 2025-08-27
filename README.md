@@ -107,6 +107,15 @@ Here is a typical workflow for using `fingerPro` to analyze a sediment dataset:
 
 -----
 
+##  :point_right: Frequently Asked Questions :arrow_right: [Check them!](FaQ.md)
+
+-----
+
+## Contributing and feedback
+This software has been improved by the questions, suggestions, and bug reports of the user community. If you have any comments, please use the [Issues](https://github.com/eead-csic-eesa/fingerPro/issues) page or report them to fingerpro@eead.csic.es.
+
+-----
+
 ## Citing fingerPro
 
 Latorre, B., Lizaga, I., Gaspar, L., & Navas, A, 2025. Evaluating the Impact of High Source Variability and Extreme Contributing Sources on Sediment Fingerprinting Models. *Water Resources Management*, *1-15*. https://doi.org/10.1007/s11269-025-04169-8
@@ -121,8 +130,20 @@ Lizaga, I., Latorre, B., Gaspar, L., Navas, A., 2020. FingerPro: an R package fo
 
 -----
 
+## Related research
+- Combining geochemistry and [isotopic tracers](https://www.sciencedirect.com/science/article/pii/S0048969722019271?via%3Dihub#f0040)
+- New tools for understanding individual tracers and [tracer selection methodologies ](https://www.sciencedirect.com/science/article/pii/S0048969720310482?via%3Dihub)
+- Sediment source fingerprinting in Glacial Landscapes, [Svalbard](https://www.sciencedirect.com/science/article/pii/S0169555X20302762?via%3Dihub), [Peruvian Andes](https://onlinelibrary.wiley.com/doi/full/10.1002/hyp.14662) and [Antarctica](https://www.sciencedirect.com/science/article/pii/S0169555X24002629?via%3Dihub)
+- Agricultural Cycle influence in [sediment and pollutant transport](https://www.sciencedirect.com/science/article/pii/S0301479720309488?via%3Dihub)
+- Changes in source contribution [during](https://www.sciencedirect.com/science/article/pii/S0301479719304220?via%3Dihub) an exceptional storm event and [before and after the event](https://www.sciencedirect.com/science/article/pii/S0169555X19302302?via%3Dihub)
+- Sediment source fingerprinting in [desert environments](https://www.sciencedirect.com/science/article/pii/S0341816223001029?via%3Dihub)
+- Sediment source fingerprinting to track pollutants in [mountainous fluvial environment](https://www.sciencedirect.com/science/article/pii/S004896972303053X?via%3Dihub), [mining areas](https://www.mdpi.com/2071-1050/15/15/11856) and [agroecosystems](https://www.sciencedirect.com/science/article/pii/S0301479720309488?via%3Dihub) 
+- [Testing FingerPro model](https://www.sciencedirect.com/science/article/pii/S0016706118300570) with artificial samples
+- [Particle size effect](https://www.sciencedirect.com/science/article/pii/S0169555X2200071X?via%3Dihub)
+
+-----
+
 ### 🎥 Video Tutorials
 [![Alt text](https://img.youtube.com/vi/LcrM_vLOa_I/0.jpg)](https://www.youtube.com/watch?v=LcrM_vLOa_I)
 
 [![Alt text](https://img.youtube.com/vi/7HwGcRSO2O8/0.jpg)](https://www.youtube.com/watch?v=7HwGcRSO2O8&ab_channel=UnmixingScience)
-
