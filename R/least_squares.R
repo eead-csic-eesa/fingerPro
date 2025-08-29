@@ -8,12 +8,10 @@
 #'
 #' @return Data frame containing the relative contribution of the sediment sources for each sediment mixture and iterations
 #'
-#' @export
-#'
 least_squares <- function(data, iter = 1L, seed = 123456L){
   system.time({
     sources <- inputSource(data)
-    mixtures <- inputSample(data)
+    mixtures <- inputMixture(data)
     
     # verify the number of sources and properties
     if (nrow(sources) -1 >= ncol(mixtures) ) {
@@ -24,7 +22,7 @@ least_squares <- function(data, iter = 1L, seed = 123456L){
     nsources<- nsources1[-nrow(nsources1),] 
     nsources<- as.vector(nsources) 
     #
-    cat("Summary of the model imputs:
+    cat("Summary of the model inputs:
         ", ncol(data)-2, "variables from",nrow(nsources1)-1,"sources (",nsources,")")
     
     if (iter==1) {  
@@ -64,30 +62,7 @@ least_squares <- function(data, iter = 1L, seed = 123456L){
     
     results <- results[order(results[, 1]), ]
     rownames(results) <- 1:nrow(results)
-    
-    
-    # {
-    #   if (iter==1) {
-    #     cat("Summary of the model outputs:",
-    #         "\n",
-    #         "See below the result/s of the unmixing process using the central value or the average with no correction",
-    #         "\n",
-    #         "\n")
-    #     print(aggregate(. ~ id, data = results, function(x) c(mean = mean(x))))
-    #       }
-    # 
-    #   else {
-    #     cat("Summary of the model outputs:",
-    #         "\n",
-    #         "See below the result/s of the unmixing process using the source variability of the best", iter, "results, notice that the first row of the results is the central value or the average with no correction",
-    #         "\n",
-    #         "\n")
-    #     print(aggregate(. ~ id, data = results, function(x) c(mean = mean(x), SD = sd(x))))
-    # 
-    #       }
-    #   }
       
-      return(results)
-    
+     return(results)
   })
 }

@@ -1,250 +1,145 @@
-#' Conservative Balance (CB)
+#' Conservative Balance (CB) Method for Isotopic Tracer Analysis
 #'
-#' The function read the isotopic ratio and content data of each individual tracer in your dataset and combine them together with the mixture to create scalar variables while preserving the same exact information.
+#' This function transforms isotopic ratio and content data of individual tracers
+#' in a dataset into virtual elemental tracers, which can then be combined
+#' with classical tracers and analyzed with standard unmixing models.
 #'
-#' @param data Data frame containing sediment source and one mixture
-#' @param Means Boolean to switch when using mean and sd data
-#' @param seed Seed for the random number generator
+#' @param data A data frame containing the isotopic tracer characteristics of
+#' sediment sources and mixtures. The data should be correctly formatted for
+#' isotopic analysis, including both isotopic ratio and isotopic content. Users
+#' should ensure their data is in a valid format by using the check_database() 
+#' function before running the CB method.
 #'
-#' @return Data frame transformed to scalar variable for further analysis.
+#' @return A data frame where isotopic tracers have been converted into
+#' scalar virtual tracers for further analysis. After the transformation,
+#' the mixture's row will have tracer values of zero.
+#'
+#' @details The Conservative Balance (CB) method provides a novel,
+#' physically-based framework for analyzing isotopic tracers in sediment
+#' fingerprinting.
+#'
+#' The core of the method is an exact transformation that combines the isotopic
+#' ratio and isotopic content into a virtual elemental tracer. This approach
+#' has two key advantages: it allows isotopic tracers to be analyzed using
+#' classical unmixing models, and it enables their combined use with elemental
+#' tracers to potentially increase the discriminant capacity of the
+#' fingerprinting analysis.
+#'
+#' This function implements the simplified approximation of the CB transformation,
+#' assuming that the isotopic ratio is much smaller than 1.
+#' The calculation is performed for both averaged and non-averaged datasets.
+#'
+#' A key feature of this transformation is that the tracer values for the
+#' mixture are set to zero. This is a direct consequence of the method, as the
+#' isotopic ratio of each source is subtracted from the mixture's isotopic ratio,
+#' meaning the mixture's own value minus itself results in zero.
+#'
+#' @references
+#' Lizaga, I., Latorre, B., Gaspar, L., & Navas, A. (2022). Combined use of 
+#  geochemistry and compound-specific stable isotopes for sediment
+#' fingerprinting and tracing. Science of The Total Environment, 832, 154834.
 #'
 #' @export
-#'  
-CB_Method <- function(data, Means = F, seed = 123456L)
+CB_method <- function(data)
 {
-  set.seed(seed)
-  ###################################################################################################
-  library(easypackages)
-  libraries("fingerPro", "plyr", "dplyr")
-  ###################################################################################################
+	# Check format
+	if (!is_isotopic(data))
+	{
+		stop("The dataset is not correctly formatted for isotopic analysis. Please check the column names and structure.")
+	}
 
-  if (Means == F) {
-    # Extract the concentrations
-    df_conc0 <- data[grepl("Conc", names(data))]
-    df_conc0 <- cbind(data[1:2], df_conc0)
-    
-    # Extract the ratios mean
-    df_Rat0 <- data[!grepl("Conc", names(data))]
-    
-    # Remove prefixes from column names
-    conc_names <- gsub("Conc_", "", names(df_conc0))
-    rat_names <- gsub("R_", "", names(df_Rat0))
-    
-    # Check if remaining column names match
-    if (identical(conc_names, rat_names)) {
-      # The remaining column names match
-      cat("\033[32mThe remaining column names match.\033[39m\n")
-    } else {
-      # The remaining column names don't match
-      cat("\033[31mThe remaining column names do not match.\033[39m\n")
-      
-      # Find the differing column names
-      differing_names <- setdiff(conc_names, rat_names)
-      
-      # Highlight the differing column names
-      highlighted_names <- paste("\033[1m", differing_names, "\033[22m", sep = "")
-      
-      cat("Columns that differ: ", paste(highlighted_names, collapse = ", "), "\n")
-    }
-    
-    # Check the number of columns
-    if (ncol(df_conc0) == ncol(df_Rat0)) {
-      # Same number of columns for Rat and Content
-      cat("\033[32mSame number of isotopic ratio and content columns.\033[39m\n")
-    } else {
-      # Different number of columns for Rat and Content
-      if (ncol(df_conc0) > ncol(df_Rat0)) {
-        cat("\033[37mMore \033[31m\033[1misotopic ratio\033[22m\033[39m\033[37m columns than \033[31m\033[1mcontent\033[22m\033[39m\033[37m columns.\033[39m\n")
-      } else {
-        cat("\033[37mMore \033[31m\033[1mcontent\033[22m\033[39m\033[37m columns than \033[31m\033[1misotopic ratio\033[22m\033[39m\033[37m columns.\033[39m\n")
-      }
-    }
-    
-    # Check for NA values in df_conc0
-    na_columns_conc <- names(df_conc0)[apply(is.na(df_conc0), 2, any)]
-    if (length(na_columns_conc) > 0) {
-      cat("\033[31mNA values detected in df_conc0 in the following column(s):\033[39m\n")
-      cat(paste("\033[31m\033[1m", na_columns_conc, "\033[22m\033[39m", sep = ", "), "\n")
-      cat("\033[33mPlease consider removing or replacing the NA data.\033[39m\n")
-    } else {
-      cat("\033[32mNo NA values detected in content columns\033[39m\n")
-    }
-    
-    # Check for NA values in df_Rat0
-    na_columns_rat <- names(df_Rat0)[apply(is.na(df_Rat0), 2, any)]
-    if (length(na_columns_rat) > 0) {
-      cat("\033[31mNA values detected in df_Rat0 in the following column(s):\033[39m\n")
-      cat(paste("\033[31m\033[1m", na_columns_rat, "\033[22m\033[39m", sep = ", "), "\n")
-      cat("\033[33mPlease consider removing or replacing the NA data.\033[39m\n")
-    } else {
-      cat("\033[32mNo NA values detected in isotopic ratio columns\033[39m\n")
-    }
-    
-    df_filt <- cbind(df_Rat0, df_conc0[, c(3:ncol(df_conc0))])
-    df_NT <- df_filt
-    
-    sr <- inputSource(df_NT)
-    sm <- inputSample(df_NT)
-    
-    # Transform isotopes to scalar variables  
-    conc <- sr[grepl("Conc", names(sr))]# Extract the concentrations
-    SDconc <- conc[grepl("D", names(conc))]
-    d15N <- sr[!grepl("Conc", names(sr))] # Extract the ratios mean
-    d15N <- d15N[, c(2:(ncol(d15N)-1))]
-    df_tmp <- cbind(d15N, conc[,c(1:(ncol(conc)/2))])
-    
-    # Extract the ratios from the mixture. The content of the mixture is not used as it is considered non-conservative
-    mix_ratios <- sm[, c(1:((ncol(d15N)/2) + 1))] 
-    
-    scalar <- d15N
-    for (ii in 1:(ncol(scalar)/2)) { # Check if you have even number of tracers
-      
-      # Calculate the mean value for each source(source ratio mean -  mixture ratios)* FA content
-      scalar[ii] <- (df_tmp[,ii] - mix_ratios[,ii + 1]) * df_tmp[,ii + ncol(scalar)] 
-      
-      # Calculate the SD value for each source <- sqrt((SDrat * Conc_rat)^2) + ((Rat_S - Rat_Mix) * SDCon_S)^2)
-      scalar[ii + ncol(scalar) / 2] <-
-        sqrt(((df_tmp[, ii + ncol(scalar) / 2] * df_tmp[, ii + ncol(scalar)])^2) +
-               ((df_tmp[, ii] - mix_ratios[, ii + 1]) * SDconc[,ii])^2)
-    }
-    
-    # CB Method::Combine the transformed isotopic tracer with the other scalar variables
-    scalar$Sources <- as.character(unique(df_NT[-c(nrow(df_NT)), 2])) # Create the sources column
-    scalar <- scalar %>% dplyr::select("Sources", everything()) # reorder column position
-    scalar$n <- sr[,ncol(sr)]
-    
-    # Replace numeric values with 0 in mix_ratios data frame
-    scalar[nrow(scalar) + 1,] <- lapply(mix_ratios, function(x) replace(x, is.numeric(x), 0))
-    
-    # # Convert to NA the SD of the mixture
-    scalar[nrow(scalar), c((ncol(scalar)/2 + 1):ncol(scalar))] <- NA
-    
-    df_unmix <- scalar
-    df_unmix <- tibble::rowid_to_column(df_unmix, "ID")# Add and ID column at the beginning
-    
-    # Transform all to numeric just in case
-    df_unmix[, 3:ncol(df_unmix)] <- as.data.frame(apply(df_unmix[, 3:ncol(df_unmix)], 2, function(x) as.numeric(as.character(x))))
-    
-#################################################################################################################################    
-#################################################################################################################################    
-  } else {
-   
-    # Extract the concentrations
-    df_conc0 <- data[grepl("Conc", names(data))]
-    df_conc0 <- cbind(data[1:2], df_conc0)
-    
-    # Extract the ratios mean
-    df_Rat0 <- data[!grepl("Conc", names(data))]
-    df_Rat0 <- df_Rat0 [, c(1:(ncol(df_Rat0)-1))]
-    
-    # Remove prefixes from column names
-    conc_names <- gsub("Conc_", "", names(df_conc0))
-    rat_names <- gsub("R_", "", names(df_Rat0))
-    
-    # Check if remaining column names match
-    if (identical(conc_names, rat_names)) {
-      # The remaining column names match
-      cat("\033[32mThe remaining column names match.\033[39m\n")
-    } else {
-      # The remaining column names don't match
-      cat("\033[31mThe remaining column names do not match.\033[39m\n")
-      
-      # Find the differing column names
-      differing_names <- setdiff(conc_names, rat_names)
-      
-      # Highlight the differing column names
-      highlighted_names <- paste("\033[1m", differing_names, "\033[22m", sep = "")
-      
-      cat("Columns that differ: ", paste(highlighted_names, collapse = ", "), "\n")
-    }
-    
-    # Check the number of columns
-    if (ncol(df_conc0) == ncol(df_Rat0)) {
-      # Same number of columns for Rat and Content
-      cat("\033[32mSame number of isotopic ratio and content columns.\033[39m\n")
-    } else {
-      # Different number of columns for Rat and Content
-      if (ncol(df_conc0) > ncol(df_Rat0)) {
-        cat("\033[37mMore \033[31m\033[1misotopic ratio\033[22m\033[39m\033[37m columns than \033[31m\033[1mcontent\033[22m\033[39m\033[37m columns.\033[39m\n")
-      } else {
-        cat("\033[37mMore \033[31m\033[1mcontent\033[22m\033[39m\033[37m columns than \033[31m\033[1misotopic ratio\033[22m\033[39m\033[37m columns.\033[39m\n")
-      }
-    }
-    
-    # Check for NA values in df_conc0
-    na_columns_conc <- names(df_conc0)[apply(is.na(df_conc0[c(1:(nrow(df_conc0)-1)),]), 2, any)]
-    if (length(na_columns_conc) > 0) {
-      cat("\033[31mNA values detected in df_conc0 in the following column(s):\033[39m\n")
-      cat(paste("\033[31m\033[1m", na_columns_conc, "\033[22m\033[39m", sep = ", "), "\n")
-      cat("\033[33mPlease consider removing or replacing the NA data.\033[39m\n")
-    } else {
-      cat("\033[32mNo NA values detected in content columns\033[39m\n")
-    }
-    
-    # Check for NA values in df_Rat0
-    na_columns_rat <- names(df_Rat0)[apply(is.na(df_Rat0[c(1:(nrow(df_Rat0)-1)), ]), 2, any)]
-    if (length(na_columns_rat) > 0) {
-      cat("\033[31mNA values detected in df_Rat0 in the following column(s):\033[39m\n")
-      cat(paste("\033[31m\033[1m", na_columns_rat, "\033[22m\033[39m", sep = ", "), "\n")
-      cat("\033[33mPlease consider removing or replacing the NA data.\033[39m\n")
-    } else {
-      cat("\033[32mNo NA values detected in isotopic ratio columns\033[39m\n")
-    }
+  # Check for NA values in the entire data frame
+  if (any(is.na(data))) {
+    na_indices <- which(is.na(data), arr.ind = TRUE)
+    first_na_row <- na_indices[1, "row"]
+    first_na_col <- na_indices[1, "col"]
+    stop(paste0("Error: The database contains missing values (NA). First NA found at row ", 
+     first_na_row, ", column ", first_na_col, " (", colnames(data)[first_na_col], ")."))
+  }
 
-    df_filt <- cbind(df_Rat0, df_conc0[, c(3:ncol(df_conc0))])
-    df_NT <- df_filt
-    
-    sources1 <- df_NT[-nrow(df_NT), c(3:ncol(df_NT))]
-    id_sources <- (1:(nrow(data) - 1))
-    id <- paste('S', id_sources, sep = '')
-    sr <- cbind(id, sources1)
-    sm <- inputSample(df_Rat0[, c(1:((ncol(df_Rat0) / 2) + 1))])
-
-    # Transform isotopes to scalar variables  
-    conc <- sr[grepl("Conc", names(sr))]# Extract the concentrations
-    SDconc <- conc[grepl("D", names(conc))]
-    d15N <- sr[!grepl("Conc", names(sr))] # Extract the ratios mean
-    d15N <- d15N[, c(2:ncol(d15N))]
-    df_tmp <- cbind(d15N, conc[,c(1:(ncol(conc)/2))])
-    
-    # Extract the ratios from the mixture. The content of the mixture is not used as it is considered non-conservative
-    mix_ratios <- sm 
-    
-    scalar <- d15N
-    for (ii in 1:(ncol(scalar)/2)) { # Check if you have even number of tracers
-      
-      # Calculate the mean value for each source(source ratio mean -  mixture ratios)* FA content
-      scalar[ii] <- (df_tmp[,ii] - mix_ratios[,ii + 1]) * df_tmp[,ii + ncol(scalar)] 
-      
-      # Calculate the SD value for each source <- sqrt((SDrat * Conc_rat)^2) + ((Rat_S - Rat_Mix) * SDCon_S)^2)
-      scalar[ii + ncol(scalar) / 2] <-
-        sqrt(((df_tmp[, ii + ncol(scalar) / 2] * df_tmp[, ii + ncol(scalar)])^2) +
-               ((df_tmp[, ii] - mix_ratios[, ii + 1]) * SDconc[,ii])^2) # 42 refers to -1 from where the Con SD starts
-    }
-    
-    scalar$Sources <- as.character(unique(df_NT[-c(nrow(df_NT)), 2])) # Create the sources column
-    scalar <- scalar %>% dplyr::select("Sources", everything()) # reorder column position
-    
-    n_samples <- data[, ncol(data)]
-    n_samples <- na.omit(as.data.frame(n_samples))
-    names(n_samples) <- "n"
-    scalar$n <- n_samples
-    
-    # Replace numeric values with 0 in mix_ratios data frame
-    new_row <- c("M1", rep(0, ncol(scalar)-1))
-    scalar <- rbind(scalar, new_row)
-    
-    # Convert to NA the SD of the mixture
-    scalar[nrow(scalar), c((length(sm) + 1):ncol(scalar))] <- NA
-    
-    df_unmix <- scalar
-    df_unmix <- tibble::rowid_to_column(df_unmix, "ID")# Add and ID column at the beginning
-    
-    # Transform all to numeric just in case
-    df_unmix[, 3:ncol(df_unmix)] <- as.data.frame(apply(df_unmix[, 3:ncol(df_unmix)], 2, function(x) as.numeric(as.character(x))))
-    
-      }
+  if(nrow(inputMixture(data))==0)
+  {
+  	stop("The dataset does not contain a mixture. The mixture's isotopic ratios are required for the CB method.")
+  }
   
-  return(df_unmix)
-  
-   }
+  if(nrow(inputMixture(data))>1)
+  {
+  	stop("The dataset contains multiple mixtures. Only one mixture is supported by the CB method.")
+  }
+
+	# Get the column names from the data frame
+	col_names <- colnames(data)
+	
+	# Determine if the data is averaged
+  if (is_averaged(data))
+  {
+		# Calculate the number of tracers
+		num_tracers <- (length(col_names) - 3) / 4
+		
+    # Extract the mean source ratios
+    source_mean_ratio <- data[,c(1,2,3:(2+num_tracers))]
+
+    # Extract the mean source content
+		source_mean_content <- data[,c(1,2,(3+num_tracers):(2+2*num_tracers))]
+
+    # Extract the sd source ratios
+    source_sd_ratio <- data[,c(1,2,(3+2*num_tracers):(2+3*num_tracers))]
+
+    # Extract the sd source content
+		source_sd_content <- data[,c(1,2,(3+3*num_tracers):(2+4*num_tracers))]
+
+    # Extract the mixture ratios
+		mix_ratio <- data[nrow(data),][,c(1,2,3:(2+num_tracers))]
+		
+		# Create the CB data frame		
+		cb <- data[,c(1,2,3:(2+num_tracers),(3 + 2*num_tracers):(2 + 3*num_tracers),ncol(data))]
+		colnames(cb)[3:(2+num_tracers)] <- gsub("^mean_", "mean_CB_", colnames(cb)[3:(2+num_tracers)])
+		colnames(cb)[(3+num_tracers):(2+2*num_tracers)] <- gsub("^sd_", "sd_CB_", colnames(cb)[(3+num_tracers):(2+2*num_tracers)])
+		
+		# Calculate the equivalent scalar tracer for each source ratio and content pair, by subtracting the mixture's ratio
+		for (i in 1:nrow(cb)) {
+			for (j in 3:(2+num_tracers)) {
+				cb[i,j] <- source_mean_content[i,j] * (source_mean_ratio[i,j] - mix_ratio[1,j])
+			}
+		}
+		
+		# Calculate the variability of the equivalent scalar tracer
+		for (i in 1:nrow(cb)) {
+			for (j in 3:(2+num_tracers)) {
+				cb[i,j+num_tracers] <- sqrt( ( source_sd_content[i,j] * (source_mean_ratio[i,j] - mix_ratio[1,j]) )^2 + 
+					( source_mean_content[i,j] * source_sd_ratio[i,j] )^2 )
+			}
+		}
+         
+    return(cb)
+  }
+  else
+  {
+		# Calculate the number of tracers
+		num_tracers <- (length(col_names) - 2) / 2
+
+    # Extract the source ratios
+    source_ratio <- data[,c(1,2,3:(2+num_tracers))]
+
+    # Extract the source content
+		source_content <- data[,c(1,2,(3+num_tracers):(2+2*num_tracers))]
+
+    # Extract the mixture ratios
+		mix_ratio <- data[nrow(data),][,c(1,2,3:(2+num_tracers))]
+
+		# Create the CB data frame		
+		cb <- source_ratio
+		colnames(cb) <- gsub("^", "CB_", colnames(cb))
+		colnames(cb)[1] <- colnames(source_ratio)[1]
+		colnames(cb)[2] <- colnames(source_ratio)[2]
+		
+		# Calculate the equivalent scalar tracer for each source ratio and content pair, by subtracting the mixture's ratio
+		for (i in 1:nrow(cb)) {
+			for (j in 3:ncol(cb)) {
+				cb[i,j] <- source_content[i,j] * (source_ratio[i,j] - mix_ratio[1,j])
+			}
+		}
+		
+		return(cb)
+  }
+}

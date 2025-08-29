@@ -10,7 +10,13 @@
 #' 
 #' @export
 #' 
-LDAPlot <- function(data, P3D = FALSE, text = FALSE, colors = NULL, interactive = FALSE) {
+LDA_plot <- function(data, P3D = FALSE, text = TRUE, colors = NULL, interactive = FALSE) {
+
+	# If data is averaged, convert it to a raw dataset
+	if(is_averaged(data)) {
+		data <- raw_dataset(data)
+	}
+	
   # reorder factor levels in order of appearance
   data[, 2] <- factor(data[, 2], levels = unique(data[, 2]))
   

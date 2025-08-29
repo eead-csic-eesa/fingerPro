@@ -1,19 +1,18 @@
-#' Singles function 
+#' Extract all possible tracer combinations with one tracer.
 #'
-#' Extract all the possible selections formed by sets of n ??? 1 tracers and solve them by using standard methods
+#' This function generates a list of all possible tracer combinations to identify the most discriminant and serves as a seed to build a consistent tracer selection in a subsequent step. This analysis explores minimal tracer combinations (one tracer for two sources) and solves the resulting determined system of equations to assess the variability of each combination. The dispersion of the solution reflects the discriminant capacity of each tracer combination: a lower dispersion indicates a higher discriminant capacity. Typically, the most discriminant tracer combination corresponds to the result of DFA analysis. In this analysis, the solutions are not restricted to the physically feasible space, which can be valuable for identifying problematic tracer selections that might be masked when using constrained unmixing models.
 #'
-#' @param source Data frame containing the sediment sources from a dataset
-#' @param mixture Data frame containing one of the dataset mixtures
-#' @param iter Number of iteration for each tracer
-#' @param seed Seed for the random number generator
+#' @param source Data frame containing the sediment sources from a dataset.
+#' @param mixture Data frame containing one of the dataset mixtures.
+#' @param iter Iterations in the variability analysis of each tracer combination.
+#' @param seed An integer value used to initialize the random number generator.
+#'   Setting a seed ensures that the sequence of random numbers generated during the unmixing is reproducible. This is useful for debugging, testing, and comparing results across different runs.
+#'   If no seed is provided, a random seed will be generated.
 #' 
-#' @return Data frame containing all the possible combination from your dataset, their system of equation solution, the consistency and the discriminant capacity. 
+#' @return A data frame containing all possible tracer combinations from the dataset. Each combination is characterized by its corresponding average solution and dispersion (standard deviation), as well as the percentage of solutions that fall within the physically feasible space.
 #'
-#' @export
-#'
-singles <- function(source, mixture, iter = 1000, seed = 123456)
+CTS_seeds_singles <- function(source, mixture, iter = 1000, seed = 123456)
 {
-  {
   set.seed(seed)
   
   source <- data.matrix(source[-1])
@@ -24,7 +23,7 @@ singles <- function(source, mixture, iter = 1000, seed = 123456)
   
   n <- cols*2+1 # n column
   
-  df <- data.frame(id=character(), w1=double(), w2=double(), Dw1=double(), Dw2=double(), cons=double(), stringsAsFactors=FALSE)
+  df <- data.frame(tracers=character(), w1=double(), w2=double(), sd_w1=double(), sd_w2=double(), percent_physical=double(), stringsAsFactors=FALSE)
   
   # Introduce the progress bar
   pb <- txtProgressBar(min = 0, max = cols, style = 3, width = 50, char = "=")
@@ -85,13 +84,14 @@ singles <- function(source, mixture, iter = 1000, seed = 123456)
       }
     }
     df[nrow(df) + 1,] <- list(paste0(tracer[i]), w1[1], w2[1], (quantile(w1, 0.84)[[1]] - quantile(w1, 0.16)[[1]])/2, (quantile(w2, 0.84)[[1]] - quantile(w2, 0.16)[[1]])/2, sc/(sc+snc))
+		setTxtProgressBar(pb, i)
   }
-  setTxtProgressBar(pb, i)}
   
-  df <- transform(df, Dmax = pmax(Dw1, Dw2))
-  df <- df[order(df$Dmax),]
+  df$max_sd_wi <- pmax(df$sd_w1, df$sd_w2)
+  df <- df[order(df$max_sd_wi),]
   row.names(df) <- NULL
   cat('\n')
   cat('\n')
   return(df)
 }
+

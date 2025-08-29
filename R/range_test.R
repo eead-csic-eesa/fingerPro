@@ -8,7 +8,13 @@
 #'
 #' @export
 #'
-rangeTest <- function(data) {
+range_test <- function(data) {
+
+	# If data is averaged, convert it to a raw dataset
+	if(is_averaged(data)) {
+		data <- raw_dataset(data)
+	}
+
   # reorder factor levels in order of appearance
   data[, 2] <- factor(data[, 2], levels = unique(data[, 2]))
 

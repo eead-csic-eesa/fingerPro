@@ -4,22 +4,37 @@
 \alias{unmix}
 \title{Unmix sediment mixtures}
 \usage{
-unmix(data, samples = 100L, iter = 100L, Means = F, seed = 123456L)
+unmix(
+  data,
+  iter = 1000L,
+  variability = "SEM",
+  lvp = TRUE,
+  constrained = FALSE,
+  resolution = NA,
+  seed = 123456L
+)
 }
 \arguments{
-\item{data}{Data frame containing sediment source and mixtures}
+\item{data}{Data frame containing sediment source and mixture data. Users should ensure their data is in a valid format by using the check_database() function before running the unmixing process.}
 
-\item{samples}{Number of samples in each hypercube dimension}
+\item{iter}{The number of iterations for the variability analysis. Increase `iter` to improve the reliability and accuracy of the results. A sufficient number of iterations is reached when the output no longer changes significantly with further increases.}
 
-\item{iter}{Iterations in the source variability analysis}
+\item{variability}{A character string specifying the type of variability to calculate. Possible values are "SD" for Standard Deviation or "SEM" for Standard Error of the Mean.}
 
-\item{Means}{Boolean to switch when using mean and sd data}
+\item{lvp}{A logical value to switch between classical variability analysis (lvp = FALSE) and Linear Variability Propagation (lvp = TRUE). LVP is a more accurate method for calculating uncertainty in unmixing models under high variability and extreme source apportionments.}
 
-\item{seed}{Seed for the random number generator}
+\item{constrained}{A logical value indicating whether the optimization should be constrained to physical solutions. If constrained = TRUE, the optimization will be restricted to solutions where all source contributions are within the range of 0 to 1. If constrained = FALSE, the optimization is unconstrained.}
+
+\item{resolution}{An integer specifying the number of samples used in each hypercube dimension for constrained optimization. This parameter is only used when constrained = TRUE and is required to perform the analysis.}
+
+\item{seed}{An integer value used to initialize the random number generator. Setting a seed ensures that the sequence of random numbers generated during the unmixing is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no seed is provided, a random seed will be generated.}
 }
 \value{
-Data frame containing the relative contribution of the sediment sources for each sediment mixture and iterations
+A data frame containing the relative contributions of the sediment sources to each sediment mixture, across all iterations. The second and third rows of the result correspond to the solution for the central or mean value of the sources. The output includes an ID column to identify each mixture, a GOF (Goodness of Fit) column, and columns for each source showing their calculated contributions.
 }
 \description{
-Asses the relative contribution of the potential sediment sources for each sediment mixture in the dataset.
+This function assesses the relative contribution of potential sediment sources to each sediment mixture in a dataset using a mass balance approach. It supports both unconstrained and constrained optimization, allowing for different methods of handling source variability.
+}
+\references{
+Latorre, B., Lizaga, I., Gaspar, L., & Navas, A. (2025). Evaluating the Impact of High Source Variability and Extreme Contributing Sources on Sediment Fingerprinting Models. *Water Resources Management*, *1-15*. https://doi.org/10.1007/s11269-025-04169-8
 }

@@ -6,7 +6,7 @@
 #'
 #' @export
 #'
-writeResults <- function(data) {
+write_results <- function(data) {
 #summary <- aggregate(. ~ id, data = data, function(x) c(mean = mean(x), SD = sd(x)))
 #Save your data in a .csv file
    # write.csv(summary, row.names = F, file = "Results Summary.csv")

@@ -1,19 +1,34 @@
-#' Box and whiskers plot
+#' @title Box and whiskers plot for sediment tracers
 #'
-#' The boxplot compactly shows the distribution of a continuous variable. It displays five summary statistics (the median, two hinges, and two whiskers), and all "outlying" points individually.
+#' @description This function creates a series of box and whisker plots to visualize the distribution and variability of individual tracers within a dataset. It is designed to work with sediment source and mixture data, automatically adapting to averaged or raw data formats.
 #'
-#' @param data Data frame containing source and mixtures data
-#' @param tracers Numeric vector containing the index of the tracers in the chart (the first column refers to the first variable)
-#' @param ncol Number of charts per row
-#' @param colors Vector of colors to use for the box plots
+#' @param data A data frame containing sediment source and mixture data. Users should ensure their data is in a valid format by using the check_database() function before running this function.
+#' @param tracers A numeric vector specifying the column indices of the tracers to be plotted. The index 1 corresponds to the first tracer column after the sample ID and group columns. If NULL (the default), plots will be generated for all tracer columns.
+#' @param ncol An integer specifying the number of charts to display per row in the final plot layout.
+#' @param colors A character vector of colors to use for the box plots. The colors are applied sequentially to each group (sources and mixture).
+#'
+#' @details This function is a wrapper for ggplot2 that automates the creation of a series of box plots, one for each tracer. The function first checks if the input data is averaged, and if so, converts it to a virtual raw dataset using the raw_dataset() function to enable the box plot visualization.
+#'
+#' Each plot displays the distribution of a single tracer, with different groups (sources and mixtures) represented by separate box plots. In addition to the standard five-number summary (median, hinges, and whiskers), the function also overlays the sample count and the mean value for each group, providing a more detailed summary of the data.
+#'
+#' The final output is a multi-panel plot arranged in a grid, with an optional legend depending on the input data.
 #'
 #' @export
-#'
-boxPlot <- function(data, tracers = 1:(ncol(data) - 2), ncol = 3, colors = NULL) {
+box_plot <- function(data, tracers = NULL, ncol = 3, colors = NULL) {
+
+	# If data is averaged, convert it to a raw dataset
+	if(is_averaged(data)) {
+		data <- raw_dataset(data)
+	}
+	
+	if(is.null(tracers)) {
+		tracers <- c(1:(ncol(inputMixture(data))-1))
+	}
+
   # reorder the groups
   data[, 2] <- factor(data[, 2], levels = unique(data[, 2]))
 
-  dat_plot <- melt(data, id = c(1, 2))
+  dat_plot <- reshape::melt(data, id = c(1, 2))
 
   funclist <- list()
   for (i in 1:length(tracers)) {
@@ -46,7 +61,7 @@ boxPlot <- function(data, tracers = 1:(ncol(data) - 2), ncol = 3, colors = NULL)
     }
   }
 
-  blank <- grid.rect(gp = gpar(col = "white"))
+  blank <- grid::grid.rect(gp = grid::gpar(col = "white"))
 
   glist <- list()
   j <- 1
@@ -91,5 +106,5 @@ boxPlot <- function(data, tracers = 1:(ncol(data) - 2), ncol = 3, colors = NULL)
     j <- j + 1
   }
   
-  p3 <- grid.arrange(grobs = glist, ncol = ncol + 1, widths = c(rep(10, each = ncol), 3))
+  p3 <- gridExtra::grid.arrange(grobs = glist, ncol = ncol + 1, widths = c(rep(10, each = ncol), 3))
 }

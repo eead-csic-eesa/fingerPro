@@ -4,10 +4,12 @@
 \alias{inputSource}
 \title{Input sediment sources}
 \usage{
-inputSource(data)
+inputSource(data, na.omit = T)
 }
 \arguments{
 \item{data}{Data frame containing source and mixtures data}
+
+\item{na.omit}{Boolean to omit or not NA values when computing the mean and SD}
 }
 \description{
 The function select and extract the source samples of the dataset.
