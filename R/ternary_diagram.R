@@ -1,62 +1,69 @@
-#' Ternary diagrams with the CI function results
+#' @title Visualize individual tracer analysis as ternary diagrams
 #'
-#' Display the CI prediction for the selected number 
+#' @description This function creates ternary diagrams to visualize the results of the individual tracer analysis. Each ternary diagram represents the predicted apportionments for a specific tracer.
 #'
-#' @param data Data frame containing the results from the CI_Method function
-#' @param tracers Number of tracers to display
-#' @param Means Number of iteration for each tracer
-#' @param n_col Number of columns in which display the tracers
-#' @param n_row Number of rows in which display the tracers
-#' @param vrtl_sol Plot a theoretical solution
-#' @param vrtl Values of the theoretical solution
+#' @param data A data frame containing the results from the individual tracer analysis function.
+#' @param tracers A vector specifying the indices of the tracers to be displayed.
+#' @param rows An integer specifying the number of rows in the grid of ternary diagrams.
+#' @param cols An integer specifying the number of columns in the grid of ternary diagrams.
+#' @param solution A vector containing an optional reference solution for visual comparison.
 #'
-#' @return Ternary diagrams from the individual tracer predictions
+#' @return A grid of ternary diagrams, each representing the predicted apportionments for a specific tracer. If there are three sources, the function generates one ternary triangle for each tracer. If there are four sources, the function generates six triangles for each tracer. The six triangles represent the following source combinations at their vertices:
+#' 1. (S1, S2, S3+S4)
+#' 2. (S2, S3, S1+S4)
+#' 3. (S3, S4, S1+S2)
+#' 4. (S4, S1, S2+S3)
+#' 5. (S1, S3, S2+S4)
+#' 6. (S2, S4, S1+S3)
 #'
 #' @export
-#'
-Ternary_diagram <- function(data, tracers = 1:2, n_row = 1, n_col = 2, Means = TRUE, vrtl_sol = FALSE, vrtl = c(0.05, 0.9, 0.05)) {
+ternary_diagram <- function(data, tracers = c(1:2), rows = 1, cols = 2, solution = NA) {
   
-  sources <- nrow(inputSource(data[[length(data) - 1]]))
+  source_n <- nrow(inputSource(data[[length(data) - 1]]))
   
-  if (sources == 3) {
-    if (Means == TRUE) {
-      t_names <- colnames(data[[length(data) - 1]][3:(ncol(data[[length(data) - 1]]) - 3)])
-    } else {
-      t_names <- colnames(data[[length(data) - 1]][3:ncol(data[[length(data) - 1]])])
-    }
+  if (source_n == 3) {
+    t_names <- colnames(data[[length(data) - 1]][3:ncol(data[[length(data) - 1]])])
+    t_names <- gsub("^mean_", "", t_names)
     
     plots <- list()
-    par(mar = c(0, 0.1, 3, 0.1), mfcol = c(n_row, n_col))
+    par(mar = c(0, 0.1, 3, 0.1), mfcol = c(rows, cols))
     for (i2 in tracers) {
       result <- data[[i2]]
-        x <- result$w.S1
-        y <- result$w.S2
-        z <- result$w.S3
+      labels <- colnames(result)
+      labels <- gsub("^w.", "", labels)
+      colnames(result) <- c("ID", "GOF", "w.S1", "w.S2", "w.S3")
+      
+      x <- result$w.S1
+      y <- result$w.S2
+      z <- result$w.S3
+      
+      test <- as.data.frame(cbind(x, y, z))
+
+			if (length(solution)==3) {
+				x_sol <- solution[1]
+				y_sol <- solution[2]
+				z_sol <- solution[3]
+				test_sol <- as.data.frame(cbind(x_sol, y_sol, z_sol))
+			}
+
+      plots[[i2]] <- Ternary::TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1) #, alab = labels[3], blab = labels[4], clab = labels[5])
+      Ternary::TernaryPoints(test, col = scales::alpha('blue', 0.5), cex = 0.1)
+			if (length(solution)==3) {
+				Ternary::TernaryPoints(test_sol, col = scales::alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
+ 			}
+      title(t_names[i2], cex.main = 3.5)
+		}
+	} else if (source_n == 4) {
+    t_names <- colnames(data[[length(data) - 1]][3:ncol(data[[length(data) - 1]])])
+    t_names <- gsub("^mean_", "", t_names)
         
-        x_vrt <- vrtl[1]
-        y_vrt <- vrtl[2]
-        z_vrt <- vrtl[3]
-        
-        test <- as.data.frame(cbind(x, y, z))
-        test_vrt <- as.data.frame(cbind(x_vrt, y_vrt, z_vrt))
-        
-        plots[[i2]] <- TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
-                  TernaryPoints(test, col = alpha('blue', 0.5), cex = 0.1)
-          if (vrtl_sol) {TernaryPoints(test_vrt, col = alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
-                }
-         title(t_names[i2], cex.main = 3.5)
-      }
-  } else if (sources == 4) {
-    if (Means == TRUE) {
-      t_names <- colnames(data[[length(data) - 1]][3:(ncol(data[[length(data) - 1]]) - 3)])
-    } else {
-      t_names <- colnames(data[[length(data) - 1]][3:ncol(data[[length(data) - 1]])])
-    }
-    
     plots <- list()
-    par(mar = c(0, 0.1, 3, 0.1), mfcol = c(6, n_col))
+    par(mar = c(0, 0.1, 3, 0.1), mfcol = c(6, cols))
     for (i2 in tracers) {
       result <- data[[i2]]
+      labels <- colnames(result)
+      labels <- gsub("^w.", "", labels)
+      colnames(result) <- c("ID", "GOF", "w.S1", "w.S2", "w.S3", "w.S4")
       
       # Original triangles
       x <- result$w.S1
@@ -90,67 +97,71 @@ Ternary_diagram <- function(data, tracers = 1:2, n_row = 1, n_col = 2, Means = T
       test4 <- as.data.frame(cbind(x4, y4, z4))
       test5 <- as.data.frame(cbind(x5, y5, z5))
       
-      # Virtual sample
-      x_vrt <- vrtl[1]
-      y_vrt <- vrtl[2]
-      z_vrt <- vrtl[3] + vrtl[4]
-      test_vrt <- as.data.frame(cbind(x_vrt, y_vrt, z_vrt))
-      x_vrt1 <- vrtl[2]
-      y_vrt1 <- vrtl[3]
-      z_vrt1 <- vrtl[1] + vrtl[4]
-      test_vrt1 <- as.data.frame(cbind(x_vrt1, y_vrt1, z_vrt1))
-      x_vrt2 <- vrtl[3]
-      y_vrt2 <- vrtl[4]
-      z_vrt2 <- vrtl[1] + vrtl[2]
-      test_vrt2 <- as.data.frame(cbind(x_vrt2, y_vrt2, z_vrt2))
-      x_vrt3 <- vrtl[4]
-      y_vrt3 <- vrtl[1]
-      z_vrt3 <- vrtl[2] + vrtl[3]
-      test_vrt3 <- as.data.frame(cbind(x_vrt3, y_vrt3, z_vrt3))
-      x_vrt4 <- vrtl[1]
-      y_vrt4 <- vrtl[3]
-      z_vrt4 <- vrtl[2] + vrtl[4]
-      test_vrt4 <- as.data.frame(cbind(x_vrt4, y_vrt4, z_vrt4))
-      x_vrt5 <- vrtl[2]
-      y_vrt5 <- vrtl[4]
-      z_vrt5 <- vrtl[1] + vrtl[3]
-      test_vrt5 <- as.data.frame(cbind(x_vrt5, y_vrt5, z_vrt5))
+      if (!is.na(solution)) {
+		    # Virtual sample
+		    x_sol <- solution[1]
+		    y_sol <- solution[2]
+		    z_sol <- solution[3] + solution[4]
+		    test_sol <- as.data.frame(cbind(x_sol, y_sol, z_sol))
+		    x_sol1 <- solution[2]
+		    y_sol1 <- solution[3]
+		    z_sol1 <- solution[1] + solution[4]
+		    test_sol1 <- as.data.frame(cbind(x_sol1, y_sol1, z_sol1))
+		    x_sol2 <- solution[3]
+		    y_sol2 <- solution[4]
+		    z_sol2 <- solution[1] + solution[2]
+		    test_sol2 <- as.data.frame(cbind(x_sol2, y_sol2, z_sol2))
+		    x_sol3 <- solution[4]
+		    y_sol3 <- solution[1]
+		    z_sol3 <- solution[2] + solution[3]
+		    test_sol3 <- as.data.frame(cbind(x_sol3, y_sol3, z_sol3))
+		    x_sol4 <- solution[1]
+		    y_sol4 <- solution[3]
+		    z_sol4 <- solution[2] + solution[4]
+		    test_sol4 <- as.data.frame(cbind(x_sol4, y_sol4, z_sol4))
+		    x_sol5 <- solution[2]
+		    y_sol5 <- solution[4]
+		    z_sol5 <- solution[1] + solution[3]
+		    test_sol5 <- as.data.frame(cbind(x_sol5, y_sol5, z_sol5))
+      }
       
       # Plotting
-      # par(mfcol=c(6, n_col))  # Set up multi-plot layout
+      # par(mfcol=c(6, cols))  # Set up multi-plot layout
       # Plot original triangles
-      plots[[i2]] <- TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
-      TernaryPoints(test, col = alpha('blue', 0.5), cex = 0.1)
-      if (vrtl_sol) {
-        TernaryPoints(test_vrt,  col = alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
+      plots[[i2]] <- Ternary::TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
+      Ternary::TernaryPoints(test, col = scales::alpha('blue', 0.5), cex = 0.1)
+      if (!is.na(solution)) {
+        Ternary::TernaryPoints(test_sol,  col = scales::alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
       }
       title(t_names[i2], cex.main = 3.5)
       
-      TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
-      TernaryPoints(test1, col = alpha('blue', 0.5), cex = 0.1)
-      if (vrtl_sol) {
-        TernaryPoints(test_vrt1,  col = alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
+      Ternary::TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
+      Ternary::TernaryPoints(test1, col = scales::alpha('blue', 0.5), cex = 0.1)
+      if (!is.na(solution)) {
+        Ternary::TernaryPoints(test_sol1,  col = scales::alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
       }
-      TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
-      TernaryPoints(test2, col = alpha('blue', 0.5), cex = 0.1)
-      if (vrtl_sol) {
-        TernaryPoints(test_vrt2,  col = alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
+      Ternary::TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
+      Ternary::TernaryPoints(test2, col = scales::alpha('blue', 0.5), cex = 0.1)
+      if (!is.na(solution)) {
+        Ternary::TernaryPoints(test_sol2,  col = scales::alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
       }
-      TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
-      TernaryPoints(test3, col = alpha('blue', 0.5), cex = 0.1)
-      if (vrtl_sol) {
-        TernaryPoints(test_vrt3,  col = alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
+      Ternary::TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
+      Ternary::TernaryPoints(test3, col = scales::alpha('blue', 0.5), cex = 0.1)
+      if (!is.na(solution)) {
+        Ternary::TernaryPoints(test_sol3,  col = scales::alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
       }
-       TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
-      TernaryPoints(test4, col = alpha('blue', 0.5), cex = 0.1)
-      if (vrtl_sol) {
-        TernaryPoints(test_vrt4,  col = alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
+       Ternary::TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
+      Ternary::TernaryPoints(test4, col = scales::alpha('blue', 0.5), cex = 0.1)
+      if (!is.na(solution)) {
+        Ternary::TernaryPoints(test_sol4,  col = scales::alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
       }
-      TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
-      TernaryPoints(test5, col = alpha('blue', 0.5), cex = 0.1)
-      if (vrtl_sol) {
-        TernaryPoints(test_vrt5,  col = alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
+      Ternary::TernaryPlot(xlim = c(-0.6, 0.6), tip.cex = 1, grid.lines = 4, grid.minor.lines = 1)
+      Ternary::TernaryPoints(test5, col = scales::alpha('blue', 0.5), cex = 0.1)
+      if (!is.na(solution)) {
+        Ternary::TernaryPoints(test_sol5,  col = scales::alpha('red', 0.9), cex = 0.8, pch = 23, bg = "black", lwd = 2)
       }
     }
+  } else {
+  	stop(paste0("Error: ternary_diagram is not implemented for ", source_n," sources."))
   }
 }

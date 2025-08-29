@@ -1,15 +1,20 @@
-#' Discriminant function analysis test
+#' @title Discriminant Function Analysis (DFA) Test
 #'
-#' Performs a stepwise forward variable selection using the Wilk's Lambda criterion.
+#' @description Performs a stepwise forward variable selection using the Wilk's Lambda criterion to identify the most discriminant tracers in a dataset.
 #'
-#' @param data Data frame containing source and mixtures
-#' @param niveau level for the approximate F-test decision 
+#' @param data A data frame containing the characteristics of sediment sources and mixtures.
+#' @param niveau A numeric value specifying the significance level for the approximate F-test decision.
 #'
-#' @return Data frame only containing the variables that pass the DFA test
-#' 
+#' @return A data frame containing only the tracers that pass the DFA test.
+#'
 #' @export
-#'
-DFATest <- function(data, niveau = 0.1) {
+DFA_test <- function(data, niveau = 0.1) {
+
+	# If data is averaged, convert it to a raw dataset
+	if(is_averaged(data)) {
+		data <- raw_dataset(data)
+	}
+	
   # reorder factor levels in order of appearance
   data[, 2] <- factor(data[, 2], levels = unique(data[, 2]))
 
@@ -39,14 +44,15 @@ DFATest <- function(data, niveau = 0.1) {
   DFA_OFF1 <- data[, 3:ncol(data)]
   DFA_OFF1 <- DFA_OFF1[, !(names(DFA_OFF1) %in% var)]
   var_OFF.DFA <- names(DFA_OFF1)
-  total_DFA <- data[, !(names(data) %in% var_OFF.DFA)]
-  
+#  total_DFA <- data[, !(names(data) %in% var_OFF.DFA)]
+  total_DFA <- data[, c("ID", "samples", var)] # keep tracer order
 
-  cat("Attention->", ncol(DFA_OFF1), "variables were removed from a total of", 
+  cat(" The variable/variables that remains in your dataset are:", 
+      crayon::green(crayon::bold(names(total_DFA[3:ncol(total_DFA)]))), ".\n")
+  cat("Attention: ", ncol(DFA_OFF1), "variables were removed from a total of", 
       ncol(data[3:ncol(data)]), ":", crayon::red(crayon::bold(var_OFF.DFA)), ".", "\n")
-  cat(" The variable/variables that remains in your dataset is/are:", 
-      crayon::green(crayon::bold(names(total_DFA[3:ncol(total_DFA)]))), ".")
-  
-  return(list(total_DFA, DFA))
-  
+
+  #return(list(total_DFA, DFA))
+  return(total_DFA)
 }
+
