@@ -4,6 +4,20 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 
 ![logo def-github-04](https://user-images.githubusercontent.com/30837036/91882995-13c90200-ec84-11ea-9643-0191dfbca995.jpg)
+
+This is the official version of the fingerPro model. This repository contains the original source code, the most recent updates, and documentation validated by the core development team to ensure the reliability of results in sediment fingerprinting research.
+
+## Core Development Team
+* **A. Navas** (Core Developer / Principal Investigator / Funding Acquisition (*) / Project Coordination / Thesis Director)
+* **B. Latorre** (Core Developer)
+* **L. Gaspar** (Core Developer)
+
+* Projects: 1. CICYT project MEDEROCAR (CGL2008-0831), 2. PTA contract (PTA2009-2258-P), 3. CICYT project EROMED (CG2011-25486), 4. CICYT project TRAZESCAR (CGL2014-52986-R), 5. Predoctoral contract (BES-2015-071780), 6. AEI project RedNutSoil (PID2019-104857RB-I00), 7. AEI project PID2019-103946RJ-I00
+
+## Contributors during PhD thesis developement 
+* **L. Palazón** (Contributor in the frame of her PhD thesis (2010-1016) funded by projects: MEDEROCAR (CGL2008-0831), PTA contract (PTA2009-2258-P)EROMED (CG2011-25486), TRAZESCAR (CGL2014-52986-R))
+* **I. Lizaga** (Contributor in the frame of his PhD thesis (2016-2020) funded by project: TRAZESCAR (CGL2014-52986-R), Predoctoral contract (BES-2015-071780))
+
 # A Comprehensive R Package for Sediment Source Unmixing
 
 `fingerPro` is an R package designed to quantify the provenance of sediments in a catchment or study area by applying a mixing model algorithm to end sediment mixtures based on a comprehensive characterization of the sediment sources. The fingerPro model builds upon the foundational concept of using mass balance linear equations for sediment source quantification by incorporating several distinct technical advancements. It employs an optimization approach to normalize discrepancies in tracer ranges and minimize the objective function. Latin hypercube sampling is used to explore all possible combinations of source contributions (0-100%), mitigating the risk of local minima. Uncertainty in source estimates is quantified through a Monte Carlo routine, and the model includes additional metrics, such as the normalized error of the virtual mixture, to detect mathematical inconsistencies, non-physical solutions, and biases. A new linear variability propagation (LVP) method is also included to address and quantify potential bias in model outcomes, particularly when dealing with dominant or non-contributing sources and high source variability, offering a significant advancement for field studies where direct comparison with theoretical apportionments is not feasible. The package includes several graphs to help users with data understanding, such as box plots, correlation, PCA, and LDA graphs. Furthermore, new methods such as Consensus Ranking (CR) and Consistent Tracer Selection (CTS) are included to correctly apply the fingerprinting technique and increase dataset and model understanding. A new Conservative Balance (CB) method has also been incorporated to enable the use of isotopic tracers.
@@ -140,11 +154,3 @@ Lizaga, I., Latorre, B., Gaspar, L., Navas, A., 2020. FingerPro: an R package fo
 - Sediment source fingerprinting to track pollutants in [mountainous fluvial environment](https://www.sciencedirect.com/science/article/pii/S004896972303053X?via%3Dihub), [mining areas](https://www.mdpi.com/2071-1050/15/15/11856) and [agroecosystems](https://www.sciencedirect.com/science/article/pii/S0301479720309488?via%3Dihub) 
 - [Testing FingerPro model](https://www.sciencedirect.com/science/article/pii/S0016706118300570) with artificial samples
 - [Particle size effect](https://www.sciencedirect.com/science/article/pii/S0169555X2200071X?via%3Dihub)
-
------
-
-### 🎥 Video Tutorials
-[![Alt text](https://img.youtube.com/vi/LcrM_vLOa_I/0.jpg)](https://www.youtube.com/watch?v=LcrM_vLOa_I)
-
-[![Alt text](https://img.youtube.com/vi/7HwGcRSO2O8/0.jpg)](https://www.youtube.com/watch?v=7HwGcRSO2O8&ab_channel=UnmixingScience)
-
