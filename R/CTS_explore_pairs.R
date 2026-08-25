@@ -5,15 +5,21 @@
 #' @param source Data frame containing the sediment sources from a dataset.
 #' @param mixture Data frame containing one of the dataset mixtures.
 #' @param iter Iterations in the variability analysis of each tracer combination.
-#' @param seed An integer value used to initialize the random number generator.
-#'   Setting a seed ensures that the sequence of random numbers generated during the unmixing is reproducible. This is useful for debugging, testing, and comparing results across different runs.
-#'   If no seed is provided, a random seed will be generated.
+#' @param rng_init An integer value used to initialize the random number generator (RNG). Providing a starting value ensures that the sequence of random numbers generated is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no value is provided, a random one will be generated.
 #' 
 #' @return A data frame containing all possible tracer combinations from the dataset. Each combination is characterized by its corresponding average solution and dispersion (standard deviation), as well as the percentage of solutions that fall within the physically feasible space.
 #'
-CTS_seeds_pairs <- function(source, mixture, iter = 1000, seed = 123456)
+#' @keywords internal
+CTS_seeds_pairs <- function(source, mixture, iter = 1000, rng_init = NULL)
 {
-  set.seed(seed)
+  # If no RNG is provided, generate a random integer for reproducibility
+  if (is.null(rng_init))
+  {
+    rng_init <- sample(1:1000000, 1)
+    message("No RNG initialization value provided. Using random starting value: ", rng_init)
+  }
+
+  set.seed(rng_init)
   
   source <- data.matrix(source[-1])
   mixture <- data.matrix(mixture[-1])

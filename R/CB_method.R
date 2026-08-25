@@ -1,4 +1,4 @@
-#' Conservative Balance (CB) Method for Isotopic Tracer Analysis
+#' Apply the Conservative Balance (CB) method for isotopic tracer analysis
 #'
 #' This function transforms isotopic ratio and content data of individual tracers
 #' in a dataset into virtual elemental tracers, which can then be combined
@@ -6,9 +6,7 @@
 #'
 #' @param data A data frame containing the isotopic tracer characteristics of
 #' sediment sources and mixtures. The data should be correctly formatted for
-#' isotopic analysis, including both isotopic ratio and isotopic content. Users
-#' should ensure their data is in a valid format by using the check_database() 
-#' function before running the CB method.
+#' isotopic analysis, including both isotopic ratio and isotopic content.
 #'
 #' @return A data frame where isotopic tracers have been converted into
 #' scalar virtual tracers for further analysis. After the transformation,

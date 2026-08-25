@@ -2,12 +2,20 @@
 % Please edit documentation in R/CI.R
 \name{CI}
 \alias{CI}
-\title{Compute Conservativeness Index (CI) for individual tracers}
+\title{Compute the Conservativeness Index (CI) for individual tracers}
 \usage{
-CI(ita)
+CI(data, completion_method = "virtual", iter = 5000, rng_init = NULL)
 }
 \arguments{
-\item{ita}{A list of data frames, where each data frame contains the predicted apportionments for a specific tracer, as obtained from the `individual_tracer_analysis` function.}
+\item{data}{A data frame containing the characteristics of sediment sources and mixtures.}
+
+\item{completion_method}{A character string specifying the method for selecting the required remaining tracers to form a determined system of equations in the individual tracer analysis. Possible values are:
+"virtual": Fabricate remaining tracers virtually using generated random numbers. This method is valuable for an initial assessment of the tracer's consistency without the influence of other tracers from the dataset.
+"random": Randomly select remaining tracers from the dataset to complete the system. This method is useful for understanding how the tracer behaves when paired with others from the dataset.}
+
+\item{iter}{The number of iterations for the variability analysis in the individual tracer analysis. Increase `iter` to improve the reliability and accuracy of the results. A sufficient number of iterations is reached when the output no longer changes significantly with further increases.}
+
+\item{rng_init}{An integer value used to initialize the random number generator (RNG). Providing a starting value ensures that the sequence of random numbers generated is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no value is provided, a random one will be generated.}
 }
 \value{
 A data frame containing the CI value for each tracer.

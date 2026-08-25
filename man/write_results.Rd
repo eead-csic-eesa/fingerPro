@@ -2,7 +2,7 @@
 % Please edit documentation in R/write_results.R
 \name{write_results}
 \alias{write_results}
-\title{Save the results}
+\title{Export the results of an unmixing analysis}
 \usage{
 write_results(data)
 }
@@ -12,3 +12,4 @@ write_results(data)
 \description{
 The function saves the results in the workspace file for all the sediment mixture samples and for each sediment mixture sample separately
 }
+\keyword{internal}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/DFA_test.R
 \name{DFA_test}
 \alias{DFA_test}
-\title{Discriminant Function Analysis (DFA) Test}
+\title{Discriminant Function Analysis (DFA) test}
 \usage{
 DFA_test(data, niveau = 0.1)
 }
@@ -17,3 +17,4 @@ A data frame containing only the tracers that pass the DFA test.
 \description{
 Performs a stepwise forward variable selection using the Wilk's Lambda criterion to identify the most discriminant tracers in a dataset.
 }
+\keyword{internal}

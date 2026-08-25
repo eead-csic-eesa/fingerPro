@@ -2,7 +2,7 @@
 % Please edit documentation in R/range_test.R
 \name{range_test}
 \alias{range_test}
-\title{Range test}
+\title{Verifies if target sediment concentrations fall within the range of potential source values.}
 \usage{
 range_test(data)
 }

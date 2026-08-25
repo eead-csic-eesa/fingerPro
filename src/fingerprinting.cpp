@@ -69,10 +69,11 @@ double correct_sd(double avg, double dev, int n)
 //'   Possible values are 0 for Standard Deviation or 1 for Standard Error of the Mean.
 //' @param iter Iterations in the variability analysis.
 //' @param resolution Integer specifying the number of samples used in each hypercube dimension.
-//' @param seed Seed for the random number generator
+//' @param rng_init An integer value used to initialize the random number generator (RNG).
+//' @keywords internal
 //' @return Data frame containing the relative contribution of the sediment sources for each sediment mixture and iterations
 // [[Rcpp::export]]
-Rcpp::DataFrame unmix_c_lvp(SEXP sources, SEXP mixtures, int variability, int iter=100, int resolution=100, int seed=69512)
+Rcpp::DataFrame unmix_c_lvp(SEXP sources, SEXP mixtures, int variability, int iter=100, int resolution=100, int rng_init=123456)
 {
 	double (*correct)(double, double, int);
 	correct = &correct_sd;
@@ -145,7 +146,7 @@ Rcpp::DataFrame unmix_c_lvp(SEXP sources, SEXP mixtures, int variability, int it
 
 	int i, j, k, l, ii;
 	int vars, nsource, points;
-	double gof1, gof2, sum, avg, des, *max, *min, *try1, *try2;
+	double gof1, gof2, sum, *max, *min, *try1, *try2;
 	double **source, **source_d, **source_c, **point;
 	int *source_n;
 
@@ -235,8 +236,7 @@ Rcpp::DataFrame unmix_c_lvp(SEXP sources, SEXP mixtures, int variability, int it
 	}
 
 	// Struct to store trials
-	type_try tried, best;
-	tried.w = (double*) malloc( nsource * sizeof(double) );
+	type_try best;
 	best.w = (double*) malloc( nsource * sizeof(double) );
 	best.gof1 = 0.0;
 	best.gof2 = 0.0;
@@ -276,7 +276,7 @@ Rcpp::DataFrame unmix_c_lvp(SEXP sources, SEXP mixtures, int variability, int it
 
 	// Init random seed
 	rng = gsl_rng_alloc(gsl_rng_taus2);
-	gsl_rng_set(rng, seed);
+	gsl_rng_set(rng, rng_init);
 
 	// test solutions iterations
 	j = resolution * 2;
@@ -420,10 +420,11 @@ Rcpp::DataFrame unmix_c_lvp(SEXP sources, SEXP mixtures, int variability, int it
 //'   Possible values are 0 for Standard Deviation or 1 for Standard Error of the Mean.
 //' @param iter Iterations in the variability analysis.
 //' @param resolution Integer specifying the number of samples used in each hypercube dimension.
-//' @param seed Seed for the random number generator
+//' @param rng_init An integer value used to initialize the random number generator (RNG).
+//' @keywords internal
 //' @return Data frame containing the relative contribution of the sediment sources for each sediment mixture and iterations
 // [[Rcpp::export]]
-Rcpp::DataFrame unmix_c(SEXP sources, SEXP mixtures, int variability, int iter=100, int resolution=100, int seed=69512)
+Rcpp::DataFrame unmix_c(SEXP sources, SEXP mixtures, int variability, int iter=100, int resolution=100, int rng_init=123456)
 {
 	double (*correct)(double, double, int);
 	correct = &correct_sd;
@@ -496,7 +497,7 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP mixtures, int variability, int iter=1
 
 	int i, j, k, l, ii;
 	int vars, nsource, points;
-	double gof1, gof2, sum, avg, des, *max, *min, *try1, *try2;
+	double gof1, gof2, sum, *max, *min, *try1, *try2;
 	double **source, **source_d, **source_c, **point;
 	int *source_n;
 
@@ -586,8 +587,7 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP mixtures, int variability, int iter=1
 	}
 
 	// Struct to store trials
-	type_try tried, best;
-	tried.w = (double*) malloc( nsource * sizeof(double) );
+	type_try best;
 	best.w = (double*) malloc( nsource * sizeof(double) );
 	best.gof1 = 0.0;
 	best.gof2 = 0.0;
@@ -622,7 +622,7 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP mixtures, int variability, int iter=1
 
 	// Init random seed
 	rng = gsl_rng_alloc(gsl_rng_taus2);
-	gsl_rng_set(rng, seed);
+	gsl_rng_set(rng, rng_init);
 
 	// test solutions iterations
 	j = resolution * 2;
@@ -745,10 +745,11 @@ Rcpp::DataFrame unmix_c(SEXP sources, SEXP mixtures, int variability, int iter=1
 //' @param sources Data frame containing sediment source samples
 //' @param mixtures Data frame containing mixture samples
 //' @param iter Iterations in the variability analysis.
-//' @param seed Seed for the random number generator
+//' @param rng_init An integer value used to initialize the random number generator (RNG).
+//' @keywords internal
 //' @return Data frame containing the relative contribution solved by the least squares method
 // [[Rcpp::export]]
-Rcpp::DataFrame least_squares_c(SEXP sources, SEXP mixtures, int iter=100, int seed=69512)
+Rcpp::DataFrame least_squares_c(SEXP sources, SEXP mixtures, int iter=100, int rng_init=123456)
 {
 	// Construct the data.frame object
 	Rcpp::DataFrame dfs = Rcpp::DataFrame(sources);
@@ -814,24 +815,23 @@ Rcpp::DataFrame least_squares_c(SEXP sources, SEXP mixtures, int iter=100, int s
 
 	int i, j, k, l, ii;
 	int vars, nsource, points;
-	double gof1, gof2, sum, avg, des, *max, *min, *try1, *try2;
+	double *max, *min;
 	double **source, **source_d, **source_c, **point;
 	int *source_n;
 
-	double min0, max0;
 	double m1, m2, m3, m4;
 	double s11, s21, s31, s41;
 	double s12, s22, s32, s42;
 	double s13, s23, s33, s43;
 	double s14, s24, s34, s44;
-	double det, w1, w2, w3, w4;
+	double det;
 	double m11, m12, m13;
 	double m21, m22, m23;
 	double m31, m32, m33;
 	double n11, n12, n13;
 	double n21, n22, n23;
 	double n31, n32, n33;
-	double v1, v2, v3, v4;
+	double v1, v2, v3;
 	double o1, o2, o3, o4;
 	double err = 0;
 	
@@ -846,8 +846,6 @@ Rcpp::DataFrame least_squares_c(SEXP sources, SEXP mixtures, int iter=100, int s
 	source_d = (double**) malloc( nsource * sizeof(double*) );
 	source_c = (double**) malloc( nsource * sizeof(double*) );
 	source_n = (int*) malloc( nsource * sizeof(int) );
-	try1 = (double*) malloc( nsource * sizeof(double) );
-	try2 = (double*) malloc( nsource * sizeof(double) );
 
 	// Number of mixtures
 	points = dfp.nrows();
@@ -933,8 +931,7 @@ Rcpp::DataFrame least_squares_c(SEXP sources, SEXP mixtures, int iter=100, int s
 	}
 
 	// Struct to store trials
-	type_try tried, best;
-	tried.w = (double*) malloc( nsource * sizeof(double) );
+	type_try best;
 	best.w = (double*) malloc( nsource * sizeof(double) );
 	best.gof1 = 0.0;
 	best.gof2 = 0.0;
@@ -947,7 +944,7 @@ Rcpp::DataFrame least_squares_c(SEXP sources, SEXP mixtures, int iter=100, int s
 
 	// Init random seed
 	rng = gsl_rng_alloc(gsl_rng_taus2);
-	gsl_rng_set(rng, seed);
+	gsl_rng_set(rng, rng_init);
 
 	// test solutions iterations
 //	j = resolution;
@@ -1154,10 +1151,11 @@ Rcpp::DataFrame least_squares_c(SEXP sources, SEXP mixtures, int iter=100, int s
 //' @param mixtures Data frame containing mixture samples
 //' @param tracer Tracer in which implement the function
 //' @param iter Iterations in the variability analysis.
-//' @param seed Seed for the random number generator
+//' @param rng_init An integer value used to initialize the random number generator (RNG).
+//' @keywords internal
 //' @return List of data frames containing all the possible prediction for each tracer
 // [[Rcpp::export]]
-Rcpp::DataFrame triangles_random_c(SEXP sources, SEXP mixtures, int tracer=0, int iter=100, int seed=69512)
+Rcpp::DataFrame triangles_random_c(SEXP sources, SEXP mixtures, int tracer=0, int iter=100, int rng_init=123456)
 {
 	// Construct the data.frame object
 	Rcpp::DataFrame dfs = Rcpp::DataFrame(sources);
@@ -1223,11 +1221,10 @@ Rcpp::DataFrame triangles_random_c(SEXP sources, SEXP mixtures, int tracer=0, in
 
 	int i, j, k, l, ii;
 	int vars, nsource, points;
-	double gof1, gof2, sum, avg, des, *max, *min, *try1, *try2;
+	double *max, *min;
 	double **source, **source_d, **source_c, **point;
 	int *source_n;
 
-	double min0, max0;
 	double m1, m2, m3;
 	double s11, s21, s31, s41;
 	double s12, s22, s32, s42;
@@ -1245,8 +1242,6 @@ Rcpp::DataFrame triangles_random_c(SEXP sources, SEXP mixtures, int tracer=0, in
 	source_d = (double**) malloc( nsource * sizeof(double*) );
 	source_c = (double**) malloc( nsource * sizeof(double*) );
 	source_n = (int*) malloc( nsource * sizeof(int) );
-	try1 = (double*) malloc( nsource * sizeof(double) );
-	try2 = (double*) malloc( nsource * sizeof(double) );
 
 	// Number of mixtures
 	points = dfp.nrows();
@@ -1332,8 +1327,7 @@ Rcpp::DataFrame triangles_random_c(SEXP sources, SEXP mixtures, int tracer=0, in
 	}
 
 	// Struct to store trials
-	type_try tried, best;
-	tried.w = (double*) malloc( nsource * sizeof(double) );
+	type_try  best;
 	best.w = (double*) malloc( nsource * sizeof(double) );
 	best.gof1 = 0.0;
 	best.gof2 = 0.0;
@@ -1367,7 +1361,7 @@ Rcpp::DataFrame triangles_random_c(SEXP sources, SEXP mixtures, int tracer=0, in
 
 	// Init random seed
 	rng = gsl_rng_alloc(gsl_rng_taus2);
-	gsl_rng_set(rng, seed);
+	gsl_rng_set(rng, rng_init);
 
 	// test solutions iterations
 //	j = resolution;
@@ -1377,7 +1371,7 @@ Rcpp::DataFrame triangles_random_c(SEXP sources, SEXP mixtures, int tracer=0, in
 //	}
 //	resolution = j;
 
-	Progress p(points*iter, true);
+	//Progress p(points*iter, true);
 
 	// Analize each point
 	for( i = 0 ; i < points ; i++ )
@@ -1391,10 +1385,10 @@ Rcpp::DataFrame triangles_random_c(SEXP sources, SEXP mixtures, int tracer=0, in
 //					i + 1, points, 100.0*(float)(ii+1)/(float)iter, '%');
 //			fflush(stdout);
 
-			if (Progress::check_abort() )
-			return -1.0;
+			//if ( Progress::check_abort() )
+			//	return -1.0;
 
-			p.increment();
+			//p.increment();
 		
 			// compute corrected sources
 			for( k = 0 ; k < vars ; k++ )
@@ -1548,10 +1542,11 @@ Rcpp::DataFrame triangles_random_c(SEXP sources, SEXP mixtures, int tracer=0, in
 //' @param mixtures Data frame containing mixture samples
 //' @param tracer Tracer in which implement the function
 //' @param iter Iterations in the variability analysis.
-//' @param seed Seed for the random number generator
+//' @param rng_init An integer value used to initialize the random number generator (RNG).
+//' @keywords internal
 //' @return List of data frames containing all the possible prediction for each tracer inside the dataset
 // [[Rcpp::export]]
-Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP mixtures, int tracer=0, int iter=100, int seed=69512)
+Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP mixtures, int tracer=0, int iter=100, int rng_init=123456)
 {
 	// Construct the data.frame object
 	Rcpp::DataFrame dfs = Rcpp::DataFrame(sources);
@@ -1617,7 +1612,7 @@ Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP mixtures, int tracer=0, i
 
 	int i, j, k, l, ii;
 	int vars, nsource, points;
-	double gof1, gof2, sum, avg, des, *max, *min, *try1, *try2;
+	double *max, *min;
 	double **source, **source_d, **source_c, **point;
 	int *source_n;
 
@@ -1640,8 +1635,6 @@ Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP mixtures, int tracer=0, i
 	source_d = (double**) malloc( nsource * sizeof(double*) );
 	source_c = (double**) malloc( nsource * sizeof(double*) );
 	source_n = (int*) malloc( nsource * sizeof(int) );
-	try1 = (double*) malloc( nsource * sizeof(double) );
-	try2 = (double*) malloc( nsource * sizeof(double) );
 
 	// Number of mixtures
 	points = dfp.nrows();
@@ -1727,8 +1720,7 @@ Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP mixtures, int tracer=0, i
 	}
 
 	// Struct to store trials
-	type_try tried, best;
-	tried.w = (double*) malloc( nsource * sizeof(double) );
+	type_try best;
 	best.w = (double*) malloc( nsource * sizeof(double) );
 	best.gof1 = 0.0;
 	best.gof2 = 0.0;
@@ -1762,7 +1754,7 @@ Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP mixtures, int tracer=0, i
 
 	// Init random seed
 	rng = gsl_rng_alloc(gsl_rng_taus2);
-	gsl_rng_set(rng, seed);
+	gsl_rng_set(rng, rng_init);
 
 	// test solutions iterations
 //	j = resolution;
@@ -1772,7 +1764,7 @@ Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP mixtures, int tracer=0, i
 //	}
 //	resolution = j;
 
-	Progress p(points*iter, true);
+	//Progress p(points*iter, true);
 
 	// Analize each point
 	for( i = 0 ; i < points ; i++ )
@@ -1786,10 +1778,10 @@ Rcpp::DataFrame triangles_virtual_c(SEXP sources, SEXP mixtures, int tracer=0, i
 //					i + 1, points, 100.0*(float)(ii+1)/(float)iter, '%');
 //			fflush(stdout);
 
-			if (Progress::check_abort() )
-			return -1.0;
+			//if ( Progress::check_abort() )
+			//	return -1.0;
 
-			p.increment();
+			//p.increment();
 		
 			// compute corrected sources
 			for( k = 0 ; k < vars ; k++ )

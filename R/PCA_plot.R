@@ -1,4 +1,4 @@
-#' Principal component analysis chart
+#' Perform and visualize Principal Component Analysis (PCA)
 #'
 #' The function performs a principal components analysis on the given data matrix and displays a biplot using vqv.ggbiplot package of the results for each different source to help the user in the decision.
 #'

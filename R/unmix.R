@@ -1,30 +1,30 @@
-#' @title Unmix sediment mixtures
+#' @title Perform sediment source apportionment (unmixing)
 #'
 #' @description This function assesses the relative contribution of potential sediment sources to each sediment mixture in a dataset using a mass balance approach. It supports both unconstrained and constrained optimization, allowing for different methods of handling source variability.
 #'
-#' @param data Data frame containing sediment source and mixture data. Users should ensure their data is in a valid format by using the check_database() function before running the unmixing process.
+#' @param data Data frame containing sediment source and mixture data.
 #' @param iter The number of iterations for the variability analysis. Increase `iter` to improve the reliability and accuracy of the results. A sufficient number of iterations is reached when the output no longer changes significantly with further increases.
 #' @param variability A character string specifying the type of variability to calculate. Possible values are "SD" for Standard Deviation or "SEM" for Standard Error of the Mean.
 #' @param lvp A logical value to switch between classical variability analysis (lvp = FALSE) and Linear Variability Propagation (lvp = TRUE). LVP is a more accurate method for calculating uncertainty in unmixing models under high variability and extreme source apportionments.
 #' @param constrained A logical value indicating whether the optimization should be constrained to physical solutions. If constrained = TRUE, the optimization will be restricted to solutions where all source contributions are within the range of 0 to 1. If constrained = FALSE, the optimization is unconstrained.
 #' @param resolution An integer specifying the number of samples used in each hypercube dimension for constrained optimization. This parameter is only used when constrained = TRUE and is required to perform the analysis.
-#' @param seed An integer value used to initialize the random number generator. Setting a seed ensures that the sequence of random numbers generated during the unmixing is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no seed is provided, a random seed will be generated.
+#' @param rng_init An integer value used to initialize the random number generator (RNG). Providing a starting value ensures that the sequence of random numbers generated is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no value is provided, a random one will be generated.
 #'
 #' @return A data frame containing the relative contributions of the sediment sources to each sediment mixture, across all iterations. The second and third rows of the result correspond to the solution for the central or mean value of the sources. The output includes an ID column to identify each mixture, a GOF (Goodness of Fit) column, and columns for each source showing their calculated contributions.
 #'
 #' @references
 #' Latorre, B., Lizaga, I., Gaspar, L., & Navas, A. (2025). Evaluating the Impact of High Source Variability and Extreme Contributing Sources on Sediment Fingerprinting Models. *Water Resources Management*, *1-15*. https://doi.org/10.1007/s11269-025-04169-8
 #' @export
-unmix <- function(data, iter = 1000L, variability = "SEM", lvp = TRUE, constrained = FALSE, resolution = NA, seed = 123456L)
+unmix <- function(data, iter = 1000L, variability = "SEM", lvp = TRUE, constrained = FALSE, resolution = NA, rng_init = 123456L)
 {
   # Check if multiple mixture samples are present in the data.
   # If so, this block processes each mixture sample individually.
 	mixture_n = nrow(inputMixture(data))
 	if (mixture_n > 1) {
-		warning("Multiple mixture samples detected. Each sample will be processed individually.")
+		warning("Multiple mixture samples found. Processing is limited to the first sample only. Please submit samples individually for separate processing.")
 		 
 		# Loop through each mixture sample
-		for (i in 1:mixture_n) {
+		for (i in 1:1) {
 			# Create a subset of the data containing only one mixture
 			exclude <- c()
 			for (j in 1:mixture_n) {
@@ -36,15 +36,20 @@ unmix <- function(data, iter = 1000L, variability = "SEM", lvp = TRUE, constrain
 			data_one_mixture <- data[-c(exclude),]
 			# For the first mixture, run the unmixing model and store the initial results.
 			if(i == 1) {
-				results <- unmix(data_one_mixture, iter, variability, lvp, constrained, resolution, seed)
+				results <- unmix(data_one_mixture, iter, variability, lvp, constrained, resolution, rng_init)
 			}
 			# For subsequent mixtures, run the unmixing model and append the new results to the existing ones.
 			else {
-				results <- rbind(results, unmix(data_one_mixture, iter, variability, lvp, constrained, resolution, seed))
+				results <- rbind(results, unmix(data_one_mixture, iter, variability, lvp, constrained, resolution, rng_init))
 			}
 		}
 		return(results)
 	}
+
+  nsource <- nrow(inputSource(data))
+  ntracer <- ncol(inputMixture(data))-1
+  cat(crayon::cyan(crayon::bold("Summary of the model inputs: ")))
+  cat(paste0("Analyzing ", data[data$samples==tail(data, n=1)$samples,][1,2], "(", data[data$samples==tail(data, n=1)$samples,][1,1] , ") using ", ntracer, " tracers from ", nsource, " sources.", "\n"))
 
 	if (constrained == F) {
 		if(!is.na(resolution)) {
@@ -52,9 +57,9 @@ unmix <- function(data, iter = 1000L, variability = "SEM", lvp = TRUE, constrain
 		}
 	
 		if (lvp == F) {
-			results <- unmix_unconstrained(data, variability = variability, iter = iter, means = is_averaged(data), seed = seed)
+			results <- unmix_unconstrained(data, variability = variability, iter = iter, means = is_averaged(data), rng_init = rng_init)
 		} else {
-			results <- unmix_unconstrained_lvp(data, variability = variability, iter = iter, means = is_averaged(data), seed = seed)
+			results <- unmix_unconstrained_lvp(data, variability = variability, iter = iter, means = is_averaged(data), rng_init = rng_init)
 		}
 		
 		# Rename columns using a vector for clarity and efficiency
@@ -95,20 +100,19 @@ unmix <- function(data, iter = 1000L, variability = "SEM", lvp = TRUE, constrain
   nsources1<- as.data.frame(unique(data[,2]))
   nsources<- nsources1[-nrow(nsources1),] 
   nsources<- as.vector(nsources) 
-  
-  cat("Summary of the model inputs:
-    ", ncol(mixtures)-1, "variables from",nrow(nsources1)-1,"sources (",nsources,")",
-      "\n")
-  
+
+	#cat(crayon::cyan(crayon::bold("Summary of the model inputs:\n")))
+	#cat(ncol(mixtures)-1, "tracers from", nrow(nsources1)-1, "sources", "\n")
+    
   ivariability = 0
   if(variability == "SEM") {
 	  ivariability = 1
   }
   
 	if (lvp == F) {
-		results <- unmix_c(sources, mixtures, ivariability, iter, resolution, seed)
+		results <- unmix_c(sources, mixtures, ivariability, iter, resolution, rng_init)
 	} else {
-		results <- unmix_c_lvp(sources, mixtures, ivariability, iter, resolution, seed)
+		results <- unmix_c_lvp(sources, mixtures, ivariability, iter, resolution, rng_init)
 	}
   
   # reorder factor levels in order of appearance

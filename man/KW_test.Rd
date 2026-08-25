@@ -17,3 +17,4 @@ Data frame only containing the variables that pass the Kruskal-Wallis test
 \description{
 This function excludes from the original data frame the properties which do not show significant differences between sources.
 }
+\keyword{internal}

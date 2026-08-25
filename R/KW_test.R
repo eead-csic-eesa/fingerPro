@@ -7,7 +7,7 @@
 #'
 #' @return Data frame only containing the variables that pass the Kruskal-Wallis test
 #'
-#' @export
+#' @keywords internal
 #'
 KW_test <- function(data, pvalue = 0.05) {
 

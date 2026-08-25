@@ -1,8 +1,8 @@
-#' Correlation matrix chart
+#' Create a correlation matrix chart for tracer redundancy
 #'
 #' The function displays a correlation matrix of each of the properties divided by the different sources to help the user in the decision.
 #'
-#' @param data Data frame containing sediment source and mixture data. Users should ensure their data is in a valid format by using the check_database() function before running this function.
+#' @param data Data frame containing sediment source and mixture data.
 #' @param columns Numeric vector containing the index of the columns in the chart (the first column refers to the grouping variable)
 #' @param mixtures Boolean to include or exclude the mixture samples in the chart
 #' @param nmixtures Number of mixtures in the dataset

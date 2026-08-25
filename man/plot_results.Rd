@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_results.R
 \name{plot_results}
 \alias{plot_results}
-\title{Displays the results of an unmixing analysis}
+\title{Visualize the results of a sediment unmixing analysis}
 \usage{
 plot_results(
   data,

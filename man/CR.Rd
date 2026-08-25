@@ -2,16 +2,16 @@
 % Please edit documentation in R/CR.R
 \name{CR}
 \alias{CR}
-\title{Consensus Ranking (CR) method for tracer selection}
+\title{Rank tracers using the Consensus Ranking (CR) method}
 \usage{
-CR(data, debates = 1000, seed = 123456)
+CR(data, debates = 1000, rng_init = NULL)
 }
 \arguments{
-\item{data}{A data frame containing sediment source and mixture data. Users should ensure their data is in a valid format by using the `check_database()` function before running the CR method.}
+\item{data}{A data frame containing sediment source and mixture data.}
 
 \item{debates}{An integer specifying the target number of debates each tracer should participate in. The function will run until each tracer has participated in at least this many debates.}
 
-\item{seed}{An integer used to initialize the random number generator for reproducibility.}
+\item{rng_init}{An integer value used to initialize the random number generator (RNG). Providing a starting value ensures that the sequence of random numbers generated is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no value is provided, a random one will be generated.}
 }
 \value{
 A data frame containing the CR score for each tracer. The score, ranging from 100 to 0, indicates the tracer's rank in terms of consensus and conservativeness. Tracers are ordered by their score in descending order, with the most conservative tracers having high scores and dissenting tracers having low scores.

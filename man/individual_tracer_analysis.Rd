@@ -8,11 +8,11 @@ individual_tracer_analysis(
   data,
   completion_method = "virtual",
   iter = 5000,
-  seed = 123456L
+  rng_init = NULL
 )
 }
 \arguments{
-\item{data}{A data frame containing the characteristics of sediment sources and mixtures. Users should ensure their data is in a valid format by using the `check_database()` function before running the individual tracer analysis.}
+\item{data}{A data frame containing the characteristics of sediment sources and mixtures.}
 
 \item{completion_method}{A character string specifying the method for selecting the required remaining tracers to form a determined system of equations. Possible values are:
 "virtual": Fabricate remaining tracers virtually using generated random numbers. This method is valuable for an initial assessment of the tracer's consistency without the influence of other tracers from the dataset.
@@ -20,8 +20,7 @@ individual_tracer_analysis(
 
 \item{iter}{The number of iterations for the variability analysis. Increase `iter` to improve the reliability and accuracy of the results. A sufficient number of iterations is reached when the output no longer changes significantly with further increases.}
 
-\item{seed}{An integer used to initialize the random number generator for reproducibility.
-Setting a seed ensures that the sequence of random numbers generated during the unmixing is reproducible. This is useful for debugging, testing, and comparing results across different runs.}
+\item{rng_init}{An integer value used to initialize the random number generator (RNG). Providing a starting value ensures that the sequence of random numbers generated is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no value is provided, a random one will be generated.}
 }
 \value{
 A list of data frames, where each data frame contains the predicted apportionments for a specific tracer. The last element of the list is a data frame containing the **Consistency Index (CI)** for each tracer.
@@ -39,3 +38,4 @@ There are two methods for completing this minimal set:
 \references{
 Lizaga, I., Latorre, B., Gaspar, L., & Navas, A. (2020). Consensus ranking as a method to identify non-conservative and dissenting tracers in fingerprinting studies. *Science of The Total Environment*, *720*, 137537. https://doi.org/10.1016/j.scitotenv.2020.137537
 }
+\keyword{internal}

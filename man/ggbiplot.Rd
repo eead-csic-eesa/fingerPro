@@ -71,3 +71,4 @@ a ggplot2 plot
 \description{
 Biplot for Principal Components using ggplot2
 }
+\keyword{internal}
