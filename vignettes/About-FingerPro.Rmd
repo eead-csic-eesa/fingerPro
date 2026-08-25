@@ -1,0 +1,293 @@
+---
+title: "About FingerPro"
+output:
+  rmarkdown::html_vignette: default
+  html_document:
+    df_print: paged
+  pdf_document:
+    latex_engine: xelatex
+mainfont: "Liberation Sans"
+fontsize: 11pt
+vignette: >
+  %\VignetteIndexEntry{About FingerPro}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+<style>
+img {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent !important;
+}
+
+a img {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+p img {
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+h1.title {
+  font-size: 36px !important;
+  margin-bottom: 18px !important;
+}
+
+h1 {
+  font-size: 28px !important;
+  margin-top: 26px !important;
+}
+
+h2 {
+  font-size: 22px !important;
+  margin-top: 22px !important;
+}
+
+h3 {
+  font-size: 18px !important;
+}
+
+div p {
+  margin-bottom: 14px;
+}
+</style>
+
+```{r, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics("LOGO2026_FingerPro-EESA.png")
+```
+
+![](email_LOGO.png){width=4%} [fingerpro@eead.csic.es](mailto:fingerpro@eead.csic.es)
+
+![](Github_LOGO.png){width=4%} [GitHub repository](https://github.com/eead-csic-eesa/fingerPro)
+
+![](R_LOGO.png){width=4%} [CRAN page](https://CRAN.R-project.org/package=fingerPro)
+
+<div>
+<p>
+`fingerPro`, developed by the **EESA research group** (Erosion and Evaluation of Soil and Water), builds on more than 16 years of methodological advances in sediment mixing models at the Spanish National Research Council **(CSIC)**, Experimental Station of Aula Dei (EEAD), Zaragoza, Spain.
+</p>
+</div>
+  
+# Tips (Methodological Principles)
+<div>
+
+<p>
+In `fingerPro`, a fundamental idea is that **each mixture must be analysed independently**. The tracer selection explicitly depends on the combined information from both the sources and the mixture. Therefore, tracer selection methods must be performed separately for each mixture. The optimum tracers for one mixture are not necessarily suitable for other mixtures and this reflects the adaptation of the model to the specific characteristics of each dataset.
+</p>
+
+<p>
+Comparisons between mixtures are not affected by the use of different optimum tracers. Even at the same location, variations in sampling time (e.g. seasonal variability or hydrological conditions) may lead to differences in tracer signals and therefore require different tracer selections. 
+</p>
+
+<p>
+Another important aspect of `fingerPro` is that **the user plays an active role in the decision-making process**. At different stages of tracer selection, decisions must be made based on the interpretation of the dataset and the results. These decisions directly determine the subsequent steps in identifying the most suitable optimum tracers.
+</p>
+
+</div>
+
+
+# Key Features
+<p>
+`fingerPro` is a flexible framework for sediment source fingerprinting that integrates data exploration, tracer selection, and unmixing to estimate, visualize, and validate source apportionments.
+</p>
+
+### *Data Exploration*
+
+- Box and whiskers plot:
+<p>
+`box_plot` function creates a series of box and whisker plots to visualize the distribution and variability of individual tracers within a dataset.
+</p>
+
+- Correlation matrix chart: 
+<p>
+`correlation_plot` function displays a correlation matrix of each od the tracers divided by the different sources.
+</p>
+
+- Linear discriminant analysis chart:
+<p>
+`LDA_plot` function performs a linear discriminant analysis and displays the data in the relevant dimensions.
+</p>
+
+- Principal component analysis chart:
+<p>
+`PCA_plot` function performs a principal components analysis on the data and displays a biplot of the results for each source.
+</p>
+
+- Consensus ranking (CR) method:
+<p>
+`CR` function computes the CR method, an ensemble technique to identify non-conservative and dissenting tracers. The CR score, which ranges from 100 to 0, indicates a tracer's rank in terms of consensus and conservativeness. Tracers are ordered by score, with high scores indicating conservative tracers and low scores indicating dissenting ones.
+</p>
+
+- Ternary diagrams: 
+<p>
+`ternary_diagram` function creates ternary diagrams to visualize the results of the individual tracer analysis. For three sources, each tracer is represented in a single ternary plot which represents the predicted apportionments for a specific tracer, making interpretation straightforward. For four sources, each tracer is represented by six ternary plots since a ternary plot can only represent three sources, the function groups sources and generates six triangles, and the visualization becomes more complex and the interpretation becomes less intuitive. For more sources, this type of visualization is not recommended. 
+</p>
+
+```{r, echo=FALSE, out.width="90%", fig.align="center"}
+knitr::include_graphics("DataExploration.png")
+```
+- Range test: 
+<p>
+`range_test` function identify tracers of the sediment mixture that are outside the minimum and maximum values of the sediment sources.
+</p>
+
+### *Tracer Selection Methods*
+
+- Consistent tracer selection (CTS) method: 
+<p>
+`CTS_explore` function estimate all possible minimal tracer combinations (tracers_seeds) and represents the initial step from a specific seed in building a consistent tracer selection within a sediment fingerprinting study. The function evaluates these combinations by solving the corresponding systems of equations and assessing their variability, which provides an indication of their discriminant capacity. 
+</p>
+<p>
+`CTS_select` function builds on and extends a minimal tracer combination (seed) selected from the tracers_seeds obtained in CTS_explore, ensuring its mathematical consistency to identify an optimal set of tracers for unmixing. To apply this function, the user must: 1) select a specific seed from all tracers_seeds estimated by CTS_explore, and (2) define an error threshold (typically 5%, i.e., 0.05).
+</p>
+
+### *Unmixing and Results*
+
+- Unmixing: 
+<p>
+`unmix` function assesses the relative contribution of potential sources to each mixture using a mass balance approach. It supports both unconstrained and constrained optimization. The output is a data frame with the relative contributions of sources to each mixture across all iterations.
+</p>
+
+- Plotting results: 
+<p>
+`plot_results` function generates a plot showing the relative contribution of sediment sources to each mixture. It can use either violin charts or density plots.
+</p>
+
+- Validate resuts: 
+<p>
+`validate_test` function evaluate the mathematical consistency of a tracer selection for an apportionment solution. Assess the mathematical consistency of a tracer selection for an apportionment result by computing the normalized error between the predicted and observed tracer concentrations in the virtual mixture. A low normalized error for all tracers indicates a consistent tracer selection. This function can be used to diagnose problems in the results of fingerprinting models.
+</p>
+
+```{r, echo=FALSE, out.width="90%", fig.align="center"}
+knitr::include_graphics("ResultsPlots.png")
+```
+
+### *Isotopic Ratios Analysis*
+
+- Conservative balance (CB) method: 
+<p>
+`CB` function transforms isotopic ratio and content data into virtual elemental tracers. This allows isotopic tracers to be analysed with classical unmixing models and combined with scalar tracers to potentially increase discriminant capacity.
+</p>
+
+
+### *Database Formats*
+<p>
+The package supports four main database formats, each with specific column requirements:
+</p>
+
+- 'raw' format: Contains individual measurements for scalar tracers. It must have columns for ID, samples, and tracer1, tracer2, ...
+- 'isotopic raw' format: Contains individual measurements for isotopic tracers, which require both ratio and content data. It must have columns for ID, samples, ratio1, ratio2, ..., and cont_ratio1, cont_ratio2, ...
+- 'averaged' format: Contains statistical summaries of the scalar tracer data. It must have columns for ID, samples, mean_tracer1, mean_tracer2, ..., sd_tracer1, sd_tracer2, ..., and n.
+- 'isotopic averaged' format: Contains statistical summaries for isotopic tracers. It must have columns for ID, samples, mean_ratio1, mean_ratio2, ..., mean_cont_ratio1, mean_cont_ratio2, ..., sd_ratio1, sd_ratio2, ..., sd_cont_ratio1, sd_cont_ratio2, ..., and n.
+
+### *Examples Datasets*
+<p>
+The package includes four example datasets:
+</p>
+- `example_geochemical_3s_raw.csv` 'raw' format: Scalar tracers (17 geochemical elements, 3 sources and 1 mixture).
+
+- `example_isotopic_3s_raw.csv` 'isotopic raw' format: Isotopic tracers (5 CSSI ratios and their corresponding contents, 3 sources and 1 mixture).
+
+- `example_geochemical_3s_mean.csv` 'averaged' format: Scalar tracers (17 geochemical elements, 3 sources and 1 mixture).
+
+- `example_isotopic_3s_mean.csv` 'isotopic averaged' format: Isotopic tracers (5 CSSI ratios and their corresponding contents, 3 sources and 1 mixture).
+</p>
+
+# Citation
+To cite FingerPro in your research and publications use:
+
+Latorre, B., Gaspar, L., Lizaga, I., Palazon, L., Vu, V.Q., Navas, A. 2026. FingerPro: Unmixing Model Framework (R package). Comprehensive R Archive Network (CRAN). https://doi.org/10.32614/CRAN.package.fingerPro
+
+**Legal Deposits**
+
+- FingerPro R. An R package for sediment source fingerprinting (computer program). Authors: Iván Lizaga, Borja Latorre, Leticia Gaspar, Ana María Navas. (EEAD-CSIC). Notarial Act No. 3758 (José Periel Martín), 18/10/2019. Representative of CSIC: Javier Echave Oria.
+
+- FingerPro. Model for environmental mixture analysis (computer program). Authors: Leticia Palazón, Borja Latorre, Ana María Navas. (EEAD-CSIC). Notarial Act No. 4021 (Pedro Antonio Mateos Salgado), 21/07/2017. Representative of CSIC: Javier Echave Oria.
+
+**Github repository**
+
+- FingerPro: Unmixing Model Framework. GitHub repository. https://github.com/eead-csic-eesa/fingerPro
+
+
+# References
+
+**Unmixing model**
+
+- Latorre, B., Lizaga, I., Gaspar, L., Navas, A. 2025. Evaluating the Impact of High Source Variability and Extreme Contributing Sources on Sediment Fingerprinting Models. *Water Resources Management* 39, 4589–4603. https://doi.org/10.1007/s11269-025-04169-8
+
+
+- Lizaga, I., Latorre, B., Gaspar, L., Navas, A. 2020. FingerPro: an R package for tracking the provenance of sediment. *Water Resources Management* 34, 3879–3894. https://doi.org/10.1007/s11269-020-02650-0
+
+
+- Palazón, L., Latorre, B., Gaspar, L., Blake, W.H., Smith, H.G., Navas, A., 2015. Comparing catchment sediment fingerprinting procedures using an auto-evaluation approach with virtual sample mixtures. *Science of The Total Environment* 532, 456–466. https://doi.org/10.1016/j.scitotenv.2015.05.003
+
+**Understanding individual tracers and tracer selection | CTS and CR methods**
+
+- Latorre, B., Lizaga, I., Gaspar, L., Navas, A. 2021. A novel method for analysing consistency and unravelling multiple solutions in sediment fingerprinting. *Science of The Total Environment* 789, 147804. https://doi.org/10.1016/j.scitotenv.2021.147804
+
+- Lizaga, I., Latorre, B., Gaspar, L., Navas, A. 2020. Consensus ranking as a method to identify non-conservative and dissenting tracers in fingerprinting studies. *Science of The Total Environment* 720, 137537. https://doi.org/10.1016/j.scitotenv.2020.137537
+
+**Artificial samples for testing FingerPro model**
+
+- Gaspar, L., Blake, W.H., Smith, G.H., Lizaga, I., Navas, A. 2019. Testing the sensitivity of a multivariate mixing model using geochemical fingerprints with artificial mixtures. *Geoderma* 337, 498-510. https://doi.org/10.1016/j.geoderma.2018.10.005
+
+**Combining geochemistry and isotopic tracers | CB method**
+
+- Lizaga, I., Latorre, B., Gaspar, L., Navas, A. 2022. Combined use of geochemistry and compound-specific stable isotopes for sediment fingerprinting and tracing. *Science of The Total Environment* 832, 154834. https://doi.org/10.1016/j.scitotenv.2022.154834
+
+**Particle size effect**
+
+- Gaspar, L., Blake, W.H., Lizaga, I., Latorre, B., Navas, A. 2022. Particle size effect on geochemical composition of experimental soil mixtures relevant for unmixing modelling. *Geomorphology* 403, 108178. https://doi.org/10.1016/j.geomorph.2022.108178
+
+**Exceptional storm events effects**
+
+- Gaspar, L., Lizaga, I., Blake, W.H., Latorre, B., Quijano, L., Navas, A. 2019. Fingerprinting changes in source contribution for evaluating soil response during an exceptional rainfall in Spanish pre-pyrenees. *Journal of Environmental Management* 240, 136-148. https://doi.org/10.1016/j.jenvman.2019.03.109
+
+- Lizaga, I., Gaspar, L., Blake, W.H., Latorre, B., Navas, A. 2019. Fingerprinting changes of source apportionments from mixed land uses in stream sediments before and after an exceptional rainstorm event. *Geomorphology* 341, 216-229. https://doi.org/10.1016/j.geomorph.2019.05.015
+
+**Sediment source fingerprinting in Mediterranean Environments**
+
+- Lizaga, I., Gaspar, L., Latorre, B., Navas, A. 2020. Variations in transport of suspended sediment and associated elements induced by rainfall and agricultural cycle in a Mediterranean agroforestry catchment. *Journal of Environmental Management* 272, 111020. https://doi.org/10.1016/j.jenvman.2020.111020
+
+- Palazón, L., Gaspar, L., Latorre, B., Blake, W.H., Navas, A., 2015. Identifying sediment sources by applying a fingerprinting mixing model in a Pyrenean drainage catchment. *Journal of Soils Sediments* 15, 2067–2085. https://doi.org/10.1007/s11368-015-1175-6
+
+**Sediment source fingerprinting in Glacial Landscapes** 
+
+- Navas, A., Ramírez, E., Gaspar, L., Lizaga, I., Stott, T., Rojas, F., Latorre, B. and Dercon, G. 2024. The impact of glacier retreat on Andean high wetlands: Assessing the geochemical transfer and sediment provenance in the proglacial area of Huayna-Potosí (Bolivia). *Geomorphology* 460, 109250. https://doi.org/10.1016/j.geomorph.2024.109250 
+
+- Golosov, V., Navas, A., Castillo, A., Mavlyudov, B., Kharchenko, S., Lizaga, I., Gaspar, L., Dercon, G. 2024. Sediment source analysis in the korabelny stream catchment, King George Island, maritime Antarctica: Geomorphological survey, fingerprinting and delivery rate assessment. *Geomorphology* 461, 109312. https://doi.org/10.1016/j.geomorph.2024.109312
+
+- Navas, A., Lizaga, I., Santillán, N., Gaspar, L., Latorre, B., Dercon, G. 2022. Targeting the source of fine sediment and associated geochemical elements by using novel fingerprinting methods in proglacial tropical highlands (Cordillera Blanca, Perú). *Hydrological Processes* 36(8), 4662. https://doi.org/10.1002/hyp.14662
+
+- Navas, A., Lizaga, I., Gaspar, L., Latorre, B., Dercon, G. 2020. Unveiling the provenance of sediments in the moraine complex of Aldegonda Glacier (Svalbard) after glacial retreat using radionuclides and elemental fingerprints. *Geomorphology* 367, 107304. https://doi.org/10.1016/j.geomorph.2020.107304
+
+**Combining catchment modelling and sediment fingerprinting**
+
+- Palazón, L., Latorre, B., Gaspar, L., Blake, W.H., Smith, H.G., Navas, A. 2016. Combining catchment modelling and sediment fingerprinting to assess sediment dynamics in a Spanish Pyrenean river system. *Science of the Total Environment* 569, 1136-1148. https://doi.org/10.1016/j.scitotenv.2016.06.189
+
+- Palazón, L., Gaspar, L., Latorre, B., Blake, W.H., Navas, A. 2014. Evaluating the importance of surface soil contributions to reservoir sediment in alpine environments: a combined modelling and fingerprinting approach in the Posets-Maladeta Natural Park. *Solid Earth* 5, 963–978. https://doi.org/10.5194/se-5-963-2014
+
+**Pollutants**
+
+- Mohammadi, M., Egli, M., Kavian, A., Lizaga, I., 2023. Static and dynamic source identification of trace elements in river and soil environments under anthropogenic activities in the Haraz plain, Northern Iran. *Science of the Total Environment*, 892, 164432. https://doi.org/10.1016/j.scitotenv.2023.164432
+
+**Mining**
+
+- Crespo, J., Holley, E., Guillen, M., Lizaga, I., Ticona, S., Simon, I., Garcia-Chevesich, P.A. Martínez, G. 2023. Tracking Sediment Provenance Applying a Linear Mixing Model Approach Using R’s FingerPro Package, in the Mining-Influenced Ocoña Watershed, Southern Peru. *Sustainability* 15(15), 11856. https://doi.org/10.3390/su151511856
+

@@ -1,0 +1,476 @@
+---
+title: "Workflow Example"
+output:
+  rmarkdown::html_vignette: default
+  html_document:
+    df_print: paged
+  pdf_document:
+    latex_engine: xelatex
+mainfont: "Liberation Sans"
+fontsize: 11pt
+vignette: >
+  %\VignetteIndexEntry{Workflow Example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+<style>
+img {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent !important;
+}
+
+a img {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+p img {
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+h1.title {
+  font-size: 36px !important;
+  margin-bottom: 18px !important;
+}
+
+h1 {
+  font-size: 28px !important;
+  margin-top: 26px !important;
+}
+
+h2 {
+  font-size: 22px !important;
+  margin-top: 22px !important;
+}
+
+h3 {
+  font-size: 18px !important;
+}
+
+div p {
+  margin-bottom: 14px;
+}
+</style>
+
+```{r, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics("LOGO2026_FingerPro-EESA.png")
+```
+
+![](email_LOGO.png){width=4%} [fingerpro@eead.csic.es](mailto:fingerpro@eead.csic.es)
+
+![](Github_LOGO.png){width=4%} [GitHub repository](https://github.com/eead-csic-eesa/fingerPro)
+
+![](R_LOGO.png){width=4%} [CRAN page](https://CRAN.R-project.org/package=fingerPro)
+
+<div>
+<p>
+This vignette presentsa complete workflow in `fingerPro`, including data verification, exploratory analysis, tracer selection, unmixing, visualization, and validation the results. 
+
+The example dataset `example_geochemical_3s_raw.csv`, included in the package, is used to illustrate step by step the workflow. 
+</p>
+</div>
+  
+# 1. Load and verify the data
+```{r, eval=FALSE}
+install.packages("fingerPro")
+```
+
+```{r}
+library(fingerPro)
+```
+
+Load the example dataset included in the package:
+
+```{r}
+data <- read_database(
+  system.file("extdata", "example_geochemical_3s_raw.csv", package = "fingerPro")
+)
+```
+```{r, echo=FALSE}
+knitr::kable(
+  head(data),
+  caption = "<span style='color:#22513f; display:block; text-align:left;'>Preview: example_geochemical_3s_raw.csv</span>",
+  escape = FALSE
+)
+```
+
+# 2. Exploratory analysis
+
+Before selecting tracers and running the unmixing model, explore your data.
+
+## Boxplots
+
+```{r}
+box_plot(data)
+```
+<p>
+If the number of tracers is large, the output may span multiple pages. For additional options, such as navigating between pages (page =), customizing colors (colors =), or adjusting the layout of the plots (n_row =, n_col =), consult the function documentation:
+</p>
+```{r, eval=FALSE}
+help("unmix")
+```
+
+```{r}
+box_plot(data, page = 2)
+```
+```{r}
+box_plot(data, page = 3)
+```
+
+## Correlation analysis
+
+```{r}
+correlation_plot(data)
+```
+
+## Linear Discriminant Analysis (LDA)
+
+```{r}
+LDA_plot(data)
+```
+
+## Principal Component Analysis (PCA)
+
+```{r}
+PCA_plot(data)
+```
+
+## Individual tracer analysis and ternary diagrams
+
+The individual tracer analysis can be explored visually with ternary diagrams.
+
+This step is especially useful for cases with three sources.
+
+```{r, results='hide'}
+ternary_diagram(data)
+```
+<p>
+If the number of tracers is large, the output may span multiple pages. To see additional pages include this argument in the funtion.
+</p>
+
+```{r, results='hide'}
+ternary_diagram(data, page = 2)
+```
+
+```{r, results='hide'}
+ternary_diagram(data, page = 3)
+```
+
+## Range test
+
+The range test identifies tracers whose mixture values fall outside the range defined by the sources.
+
+```{r, results='hide'}
+range_test(data)
+```
+
+# 3. Tracer selection
+
+Tracer selection is a key step in `fingerPro`. The process combines pre-screening, tracer ranking, and the exploration of consistent tracer combinations using the CTS method
+
+## CTS_explore
+The CTS workflow starts by exploring all possible minimal tracer combinations using the funtion `CTS_explore`:
+
+```{r, results='hide'}
+tracers_seeds <- CTS_explore(data, iter = 1000)
+```
+
+```{r, echo=FALSE}
+knitr::kable(
+  head(tracers_seeds),
+  caption = "<span style='color:#22513f; display:block; text-align:left;'>Preview: Minimal tracer combinations </span>",
+  escape = FALSE
+)
+```
+
+<p>
+The user must select one of these combinations (select a seed) to extent into a final tracer subset using the function `CTS_select`:
+Select a seed based on the following criteria:
+
+- A high percentage of physically feasible solutions (i.e. 0 < wi < 1)  
+- Low dispersion across sources (i.e. low variability in the estimated contributions)  
+
+Combinations with low dispersion indicate a higher discriminant capacity of the selected tracers.
+
+In practice, the user inspects the output table and selects one row (seed) that provides a good balance between feasibility and low dispersion. This selected seed is then used as input in the `CTS_select` function.
+
+In this example, the first ranked combination (row 1) is selected as the seed.
+</p>
+
+## CTS_select
+
+```{r}
+selected_data <- CTS_select(data, tracers_seeds, seed_id = 1, error_threshold = 0.05)
+```
+
+
+```{r, echo=FALSE}
+knitr::kable(
+  head(selected_data),
+  caption = "<span style='color:#22513f; display:block; text-align:left;'>Preview: dataset after CTS_select</span>",
+  escape = FALSE
+)
+```
+
+<p>
+At this stage, `selected_data` contains the tracer subset that will be used in the unmixing model.
+</p>
+
+# 4. Unmixing and Visualize the results
+
+<p>
+The selected tracer subset can now be used to estimate source apportionments.
+</p>
+
+A quick run can be obtained with the default settings:
+
+```{r, results='hide'}
+output_unmix <- unmix(selected_data)
+```
+
+```{r, echo=FALSE}
+knitr::kable(
+  head(output_unmix),
+  caption = "<span style='color:#22513f; display:block; text-align:left;'>Preview: unmixing results</span>",
+  escape = FALSE
+)
+```
+
+<p>
+Advanced analyses can be performed by adjusting arguments such as `iter`, `variability`, `lvp`, `constrained`, and `resolution`. These options allow the user to tailor the model settings to the characteristics of the dataset.
+
+For a full description of the available arguments, consult the function documentation:
+
+```{r, eval=FALSE}
+help("unmix")
+```
+
+<p>
+The source apportionment results can be displayed using density plots or violin plots.
+</p>
+
+## Density plots
+
+```{r}
+plot_results(output_unmix, violin = FALSE, )
+```
+
+## Violin plots
+
+```{r}
+plot_results(output_unmix, violin = TRUE,)
+```
+
+<p>
+These plots help visualize the distribution of source contributions and the variability in the model results.
+</p>
+
+# 5. Validate the results
+
+<p>
+Finally, the apportionment solution can be checked for mathematical consistency.
+
+The `validate_results` function allows the user to assess the mathematical consistency of a given set of source apportionments. The apportionments can come from the `fingerPro` model or from any other model, and are evaluated against the tracer dataset used for unmixing.
+
+The user must provide:
+
+- The dataset used for tracer selection and unmixing  
+- The estimated source apportionments  
+
+The function computes the normalized error between the observed tracer values in the mixture and the values predicted from the proposed apportionments.
+
+Low normalized error values indicate that the solution is consistent with the selected tracers, whereas high values may suggest inconsistencies or that the proposed apportionment is not supported by the data.
+</p>
+
+```{r}
+apportionments <- c(0.435, 0.285, 0.280)
+normalized_error <- validate_results(selected_data, apportionments)
+```
+
+```{r, echo=FALSE}
+knitr::kable(
+  head(normalized_error),
+  caption = "<span style='color:#22513f; display:block; text-align:left;'>Preview: normalized error values from validate_results</span>",
+  escape = FALSE
+)
+```
+
+Low normalized error values indicate that the proposed solution is consistent with the selected tracers.
+
+# Final remarks
+
+This workflow should be repeated independently for each mixture, since optimum tracer selection depends on the combined information from the sources and the specific mixture under study.
+
+# .R Script for beginner users
+
+For beginner users who are not familiar with R Markdown, you can copy the code below into an .R script and run it in R or RStudio step by step.
+
+```{r, eval=FALSE}
+###################################    
+###### 0. Install and set wd
+###################################
+install.packages("fingerPro") # one time
+setwd("C:/your/file/directory") # your own working directory (wd)
+
+
+###################################    
+###### 1. Load and verify the data
+###################################      
+library(fingerPro)
+data <- read_database(system.file("extdata", "example_geochemical_3s_raw.csv", package = "fingerPro")) # Input example dataset
+
+
+###################################    
+###### 2. Exploratory analysis
+###################################    
+
+
+###### Box plots
+
+box_plot(data)
+
+box_plot(data, page = 1) # Visualise a specific page (e.g. page 1)
+box_plot(data, page = 2) # Visualise a specific page (e.g. page 2)
+box_plot(data, page = 3) # Visualise a specific page (e.g. page 3)
+box_plot(data, n_row = 3, n_col = 6,) # Visualise all tracers
+
+# Save results as a PNG image
+png("output_boxplot_all.png", width = 30, height = 15, units = "cm", res = 300) # to save .png results
+box_plot(data, n_row = 3, n_col = 6,) # Visualise all tracers
+dev.off()
+
+# Check 'help' for more information 
+help("box_plot")
+
+
+###### Correlation analysis
+
+correlation_plot(data)
+
+correlation_plot(data, columns = c(1:8)) # correlation plot of  n tracers (e.g. 1 to 8)
+
+# Save results as a PNG image
+png("output_correlationplot_tracers1-8.png", width = 25, height = 15, units = "cm", res = 300) # to save .png results
+correlation_plot(data, columns = c(1:8)) # correlation plot of  n tracers (e.g. 1 to 8)
+dev.off()
+
+# Check 'help' for more information 
+help("correlation_plot")
+
+
+###### Linear Discriminant Analysis (LDA)
+
+LDA_plot(data)
+
+# Save results as a PNG image
+png("output_LDA.png", width = 15, height = 12, units = "cm", res = 300) # to save .png results
+LDA_plot(data)
+dev.off()
+
+
+###### Principal Component Analysis (PCA)
+
+PCA_plot(data)
+
+# Save results as a PNG image
+png("output_PCA.png", width = 15, height = 12, units = "cm", res = 300) # to save .png results
+PCA_plot(data)
+dev.off()
+
+
+###### Individual tracer analysis and ternary diagrams
+
+output_ternary <- ternary_diagram(data)
+
+ternary_diagram(data, page = 1) # Visualise a specific page (e.g. page 1)
+ternary_diagram(data, page = 2) # Visualise a specific page (e.g. page 2)
+ternary_diagram(data, page = 3) # Visualise a specific page (e.g. page 3)
+ternary_diagram(data, rows = 4, cols = 5)  # Visualise all tracers
+
+# e.g. Save ternary_diagram results as a PNG image
+png("output_ternary_all.png", width = 18, height = 12, units = "cm", res = 300) # to save .png results
+output_ternary_all <- ternary_diagram(data, rows = 4, cols = 5)  # Visualise all tracers
+dev.off()
+
+# Check 'help' for more information 
+help("ternary_diagram")
+
+
+###### Range test
+data_rangetest <- range_test(data)
+write.csv(data_rangetest, "output_rangetest.csv")
+
+
+###################################    
+###### 3. Tracer selection
+###################################    
+
+
+###### CTS_explore
+
+tracers_seeds <- CTS_explore(data, iter = 1000)
+write.csv(tracers_seeds, "output_CTS_explore_tracers_seeds.csv")
+
+# Check 'help' for more information 
+help("CTS_explore")
+
+
+###### CTS_select
+
+selected_data <- CTS_select(data, tracers_seeds, seed_id = 1, error_threshold = 0.05) # (e.g. Seed 1 selected with an error of 5% (0.05))
+write.csv(selected_data, "output_CTS_select_selected_data.csv")
+
+# Check 'help' for more information 
+help("CTS_select")
+
+###################################    
+###### 4. Unmix
+###################################    
+
+output_unmix <- unmix(selected_data)
+write.csv(output_unmix, "output_unmix.csv")
+
+# Check 'help' for more information 
+help("unmix")
+
+plot_results(output_unmix, violin = FALSE) # Density plot
+plot_results(output_unmix, violin = TRUE) # Violing plot
+
+# save density plot
+png("output_unmix_densityplot.png", width = 18, height = 12, units = "cm", res = 300) # to save .png results
+plot_results(output_unmix, violin = FALSE) # Density plot
+dev.off()
+
+# save violin plot
+png("output_unmix_violinplot.png", width = 18, height = 12, units = "cm", res = 300) # to save .png results
+plot_results(output_unmix, violin = TRUE) # Violing plot
+dev.off()
+
+
+###################################    
+###### 5. Validate results
+###################################    
+
+apportionments <- c(0.435, 0.285, 0.280)
+normalized_error <- validate_results(selected_data, apportionments = c(0.435, 0.285, 0.280), error_threshold = 0.05)
+write.csv(normalized_error, "output_validate_results_normalized_error.csv")
+
+# Check 'help' for more information 
+help("validate_results")
+```

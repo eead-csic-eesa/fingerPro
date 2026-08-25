@@ -1,0 +1,280 @@
+---
+title: "Getting Started"
+output:
+  rmarkdown::html_vignette: default
+  html_document:
+    df_print: paged
+  pdf_document:
+    latex_engine: xelatex
+mainfont: "Liberation Sans"
+fontsize: 11pt
+vignette: >
+  %\VignetteIndexEntry{Getting Started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+<style>
+img {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent !important;
+}
+
+a img {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+p img {
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+h1.title {
+  font-size: 36px !important;
+  margin-bottom: 18px !important;
+}
+
+h1 {
+  font-size: 28px !important;
+  margin-top: 26px !important;
+}
+
+h2 {
+  font-size: 22px !important;
+  margin-top: 22px !important;
+}
+
+h3 {
+  font-size: 18px !important;
+}
+
+div p {
+  margin-bottom: 14px;
+}
+</style>
+
+```{r, echo=FALSE, out.width="100%", fig.align="center"}
+knitr::include_graphics("LOGO2026_FingerPro-EESA.png")
+```
+
+![](email_LOGO.png){width=4%} [fingerpro@eead.csic.es](mailto:fingerpro@eead.csic.es)
+
+![](Github_LOGO.png){width=4%} [GitHub repository](https://github.com/eead-csic-eesa/fingerPro)
+
+![](R_LOGO.png){width=4%} [CRAN page](https://CRAN.R-project.org/package=fingerPro)
+
+<p>
+`fingerPro` is a flexible framework for sediment source fingerprinting that integrates data exploration, tracer selection, and unmixing to estimate, visualize, and validate source apportionments.
+</p>
+
+<p>
+This vignette is intended for users who want to start working with their own databases. It explains how to organize the analysis, how to prepare a valid input file, and how to validate the structure of the dataset before running the workflow.
+</p>
+
+# A key practical idea
+
+<p>
+In `fingerPro`, each mixture must be analysed independently. Optimum tracer selection depends on the combined information from both the sources and the mixture. Therefore, tracer selection must be performed separately for each mixture.
+</p>
+
+<p>
+For this reason, it is strongly recommended to organize the analysis using one folder per mixture. Each folder should contain the input database, together with all figures and output files generated during the analysis.
+</p>
+
+<p>
+Using different sets of optimum tracers for different mixtures is not a limitation of the method. Instead, it reflects the adaptation of the model to the specific characteristics of each dataset. Therefore, comparisons between results obtained for different mixtures remain valid even when different tracer sets have been selected.
+</p>
+
+# Installation
+Install from CRAN:
+```{r, eval=FALSE}
+install.packages("fingerPro")
+```
+Or from a local file:
+```{r, eval=FALSE}
+install.packages("FingerPro_2.1.tar.gz", repos = NULL, type = "source")
+```
+Load package
+```{r}
+library(fingerPro)
+```
+
+
+# Organizing your project folder
+
+When working with your own `.csv` file, set the working directory to the folder containing the input database:
+
+```{r, eval=FALSE}
+setwd("C:/your/project/folder")
+```
+
+# Reading and validating your data
+
+To read and validate your own input database, place the `.csv` file in your project folder and use `read_dataset()`:
+
+```{r, eval=FALSE}
+data <- read_database("my_input_database.csv")
+```
+
+# Preparing your own database
+
+Before starting, it is important to prepare your input database following the structure of the example datasets provided in the package.
+
+A valid database should include:
+
+- an `ID` column with unique values
+- a `samples` column identifying the different sources and the mixture
+- the corresponding tracer variables
+
+In all cases, the mixture must be placed at the end of the dataset. If multiple mixture samples are available, they must share the same name in the `samples` column but have different `ID` values.
+
+To retain conservative tracers for subsequent analyses, it is recommended to perform a basic data cleaning beforehand:
+
+- replace BDL (below detection limit) values with a small positive number
+- exclude tracers whose mixture value and at least one source value are BDL or zero
+- optionally, remove tracers with predominantly BDL values
+
+# Supported input formats
+
+### Raw dataset | Scalar tracers
+
+This format contains individual measurements for scalar tracers.
+
+Required structure:
+
+- `ID`: unique identifier for each sample **ID**
+- `samples`: identifies sources and mixture **samles**
+- `tracer1, tracer2, ...`: tracer values
+
+### Raw dataset | Isotopic tracers
+
+This format contains individual measurements for isotopic tracers.
+
+Required structure:
+
+- `ID`: **ID**
+- `samples`: **samles**
+- `ratio1, ratio2, ...`: isotopic ratios
+- `cont_ratio1, cont_ratio2, ...`: corresponding contents **cont_**
+
+### Averaged dataset | Scalar tracers
+
+This format contains statistical summaries of scalar tracers.
+
+Required structure:
+
+- `ID`: **ID**
+- `samples`: **samles**
+- `mean_tracer1, mean_tracer2, ...`: **mean_**
+- `sd_tracer1, sd_tracer2, ...`: **sd_**
+- `n`: number of measurements in the last column
+
+#### Averaged dataset | Isotopic tracers
+
+This format contains statistical summaries of isotopic tracers.
+
+Required structure:
+
+- `ID`: **ID**
+- `samples`: **samles**
+- `mean_ratio1, mean_ratio2, ...`: **mean_**
+- `mean_cont_ratio1, mean_cont_ratio2, ...`: **mean_cont_**
+- `sd_ratio1, sd_ratio2, ...`: **sd_**
+- `sd_cont_ratio1, sd_cont_ratio2, ...`: **sd_cont_**
+- `n`: number of measurements in the last column
+
+# Example datasets
+
+The package includes four example datasets:
+
+- `example_geochemical_3s_raw.csv`  
+
+  Raw dataset for 3 sources and 1 mixture with 17 scalar tracers (geochemical elements).
+
+- `example_isotopic_3s_raw.csv`  
+
+  Raw dataset for 3 sources and 1 mixture with 5 isotopic tracers (ratios and their corresponding contents).
+
+- `example_geochemical_3s_mean.csv`  
+
+  Averaged dataset (mean, standard deviation, and number of samples) for 3 sources and 1 mixture with 17 scalar tracers (geochemical elements). In this case, the mixture has a standard deviation equal to 0; if replicates of the mixture are available, the corresponding standard deviation can be included.
+
+- `example_isotopic_3s_mean.csv`  
+
+  Averaged dataset (mean, standard deviation, and number of samples) for 3 sources and 1 mixture with 5 isotopic tracers (ratios and their corresponding contents). In this case, the mixture has a standard deviation equal to 0; if replicates of the mixture are available, the corresponding standard deviation can be included.
+  
+  
+### *Preview Example datasets*
+
+```{r, include=FALSE}
+library(fingerPro)
+
+data_geo_raw <- read.csv(
+  system.file("extdata", "example_geochemical_3s_raw.csv", package = "fingerPro")
+)
+
+data_geo_mean <- read.csv(
+  system.file("extdata", "example_geochemical_3s_mean.csv", package = "fingerPro")
+)
+
+data_iso_raw <- read.csv(
+  system.file("extdata", "example_isotopic_3s_raw.csv", package = "fingerPro")
+)
+
+data_iso_mean <- read.csv(
+  system.file("extdata", "example_isotopic_3s_mean.csv", package = "fingerPro")
+)
+```
+
+```{r, echo=FALSE}
+knitr::kable(
+  head(data_geo_raw),
+  caption = "<span style='color:#22513f; display:block; text-align:left;'>Preview: example_geochemical_3s_raw.csv</span>",
+  escape = FALSE
+)
+```
+
+```{r, echo=FALSE}
+knitr::kable(
+  head(data_geo_mean),
+  caption = "<span style='color:#22513f; display:block; text-align:left;'>Preview: example_geochemical_3s_mean.csv</span>",
+  escape = FALSE
+)
+```
+
+```{r, echo=FALSE}
+knitr::kable(
+  head(data_iso_raw),
+  caption = "<span style='color:#22513f; display:block; text-align:left;'>Preview: example_isotopic_3s_raw.csv</span>",
+  escape = FALSE
+)
+```
+
+```{r, echo=FALSE}
+knitr::kable(
+  head(data_iso_mean),
+  caption = "<span style='color:#22513f; display:block; text-align:left;'>Preview: example_isotopic_3s_mean.csv</span>",
+  escape = FALSE
+)
+```
+
+# Next steps
+
+Once your dataset has been validated, you are ready to continue with exploratory analysis, tracer selection, and source apportionment.
+
+For a complete worked example, see the vignette: `Workflow step-by-step`
