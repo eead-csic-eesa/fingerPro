@@ -126,6 +126,8 @@ The selected `seed_id` should be based on the `CTS_explore()` results. Prefer co
 
 ## Documentation
 
+Version 2.1 includes step-by-step vignettes to guide users through the `fingerPro` workflow and its main functions.
+
 - [About FingerPro](vignettes/About-FingerPro.Rmd): methodological principles, package features, citation, and references.
 - [Getting Started](vignettes/Getting-Started.Rmd): installation, project organization, supported input formats, and example datasets.
 - [Workflow Example](vignettes/Workflow-Example.Rmd): a complete analysis from data validation to result validation.
