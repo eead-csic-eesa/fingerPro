@@ -149,6 +149,10 @@ knitr::include_graphics("DataExploration.png")
 
 ### *Tracer Selection Methods*
 
+<p>
+CTS is the tracer-selection method proposed in `fingerPro`. CI and CR are complementary methods for screening non-conservative or dissenting tracers, and this screening purpose is already integrated into CTS. CI or CR should not be used alone to define the final tracer set because they do not assess tracer discrimination or the mathematical consistency of a tracer combination. CTS evaluates both properties through `CTS_explore` and `CTS_select`.
+</p>
+
 - Consistent tracer selection (CTS) method: 
 <p>
 `CTS_explore` function estimate all possible minimal tracer combinations (tracers_seeds) and represents the initial step from a specific seed in building a consistent tracer selection within a sediment fingerprinting study. The function evaluates these combinations by solving the corresponding systems of equations and assessing their variability, which provides an indication of their discriminant capacity. 

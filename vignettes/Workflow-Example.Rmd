@@ -182,7 +182,7 @@ range_test(data)
 
 # 3. Tracer selection
 
-Tracer selection is a key step in `fingerPro`. The process combines pre-screening, tracer ranking, and the exploration of consistent tracer combinations using the CTS method
+CTS is the tracer-selection method proposed in `fingerPro`. CI and CR can be used as complementary screens for non-conservative or dissenting tracers, but they should not be used alone to select the final tracer set: they do not assess tracer discrimination or mathematical consistency. Their screening purpose is already integrated into CTS, which evaluates both properties when building the tracer subset used for unmixing.
 
 ## CTS_explore
 The CTS workflow starts by exploring all possible minimal tracer combinations using the funtion `CTS_explore`:

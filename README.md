@@ -43,7 +43,9 @@ The user has an active role in tracer selection. Intermediate results should be 
 
 ### Consistent Tracer Selection
 
-The CTS workflow is the main tracer-selection route documented for `fingerPro` 2.1:
+CTS is the tracer-selection method proposed by `fingerPro`. CI and CR are complementary screening methods for identifying non-conservative or dissenting tracers, and this screening purpose is already integrated into the CTS workflow. CI or CR should therefore not be used alone to define the final tracer set: neither method evaluates tracer discrimination or the mathematical consistency of the selected combination, whereas CTS addresses both properties.
+
+The CTS workflow in `fingerPro` 2.1 has two steps:
 
 1. `CTS_explore()` evaluates all possible minimal tracer combinations. It reports physical feasibility and dispersion, which help the user select a candidate seed.
 2. `CTS_select()` extends the selected seed and retains tracers whose normalized error is below a user-defined threshold.

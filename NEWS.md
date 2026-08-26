@@ -14,6 +14,7 @@ This version focuses on standardizing the package for CRAN, refining the public 
 * **Semantic Renaming**: 
     * `CTS_seeds()` is now `CTS_explore()` to better describe the exploration of tracer combinations.
     * `CTS_error()` is now `CTS_select()`, featuring an improved interface that returns a filtered dataset.
+* **Tracer-Selection Guidance**: The documentation now identifies CTS as the proposed tracer-selection method. CI and CR are described as complementary screening methods for non-conservative or dissenting tracers, not as stand-alone methods for selecting a final tracer set, because they do not evaluate tracer discrimination or mathematical consistency. These properties are addressed within the CTS workflow.
 * **New Utility Functions**: 
     * `read_database()`: A centralized entry point that handles file reading, validation, mixture selection, and zero-value detection.
     * `validate_results()`: Diagnostic function for post-unmixing analysis.
