@@ -1,0 +1,80 @@
+citHeader("To cite fingerPro in publications use:")
+
+# --- PRIMARY PACKAGE CITATION ---
+
+bibentry(bibtype = "Manual",
+  title        = "fingerPro: Unmixing Model Framework",
+  author       = c(person("B.", "Latorre"), 
+                   person("L.", "Gaspar"), 
+                   person("I.", "Lizaga"), 
+                   person("L.", "Palazon"), 
+                   person("A.", "Navas")),
+  year         = "2026",
+  note         = "R package version 2.1",
+  url          = "https://doi.org/10.32614/CRAN.package.fingerPro",
+  
+  textVersion  = 
+  paste("Latorre, B., Gaspar, L., Lizaga, I., Palazon, L., & Navas, A. (2026).",
+        "FingerPro: Unmixing Model Framework (R package).",
+        "Comprehensive R Archive Network (CRAN). https://doi.org/10.32614/CRAN.package.fingerPro")
+)
+
+# --- ADDITIONAL LEGAL & REPOSITORY INFO ---
+
+citFooter(
+  paste(
+    "\nLegal Deposits:",
+    "",
+    "- FingerPro R. An R package for sediment source fingerprinting (computer program). Authors: Ivan Lizaga, Borja Latorre, Leticia Gaspar, Ana Maria Navas. (EEAD-CSIC). Notarial Act No. 3758 (Jose Periel Martin), 18/10/2019.",
+    "",
+    "- FingerPro. Model for environmental mixture analysis (computer program). Authors: Leticia Palazon, Borja Latorre, Ana Maria Navas. (EEAD-CSIC). Notarial Act No. 4021 (Pedro Antonio Mateos Salgado), 21/07/2017.",
+    "",
+    "Repository Github:",
+    "- FingerPro: Unmixing Model Framework. GitHub repository. https://github.com/eead-csic-eesa/fingerPro",
+    "",
+    "References FingerPro:",
+    "",
+    "Unmixing model:",
+    "- Latorre et al. 2025. Water Resources Management 39, 4589-4603. https://doi.org/10.1007/s11269-025-04169-8",
+    "- Lizaga et al. 2020. Water Resources Management 34, 3879-3894. https://doi.org/10.1007/s11269-020-02650-0",
+    "- Palazon et al. 2015. Science of The Total Environment 532, 456-466. https://doi.org/10.1016/j.scitotenv.2015.05.003",
+    "",
+    "Understanding individual tracers and tracer selection | CTS and CR methods:",
+    "- Latorre et al. 2021. Science of The Total Environment 789, 147804. https://doi.org/10.1016/j.scitotenv.2021.147804",
+    "- Lizaga et al. 2020. Science of The Total Environment 720, 137537. https://doi.org/10.1016/j.scitotenv.2020.137537",
+    "",
+    "Artificial samples for testing FingerPro model:",
+    "- Gaspar et al. 2019. Geoderma 337, 498-510. https://doi.org/10.1016/j.geoderma.2018.10.005",
+    "",
+    "Combining geochemistry and isotopic tracers | CB method:",
+    "- Lizaga et al. 2022. Science of The Total Environment 832, 154834. https://doi.org/10.1016/j.scitotenv.2022.154834",
+    "",
+    "Particle size effect:",
+    "- Gaspar et al. 2022. Geomorphology 403, 108178. https://doi.org/10.1016/j.geomorph.2022.108178",
+    "",
+    "Exceptional storm events effects:",
+    "- Gaspar et al. 2019. Journal of Environmental Management 240, 136-148. https://doi.org/10.1016/j.jenvman.2019.03.119",
+    "- Lizaga et al. 2019. Geomorphology 341, 216-229. https://doi.org/10.1016/j.geomorph.2019.05.015",
+    "",
+    "Sediment source fingerprinting in Mediterranean Environments:",
+    "- Lizaga et al. 2020. Journal of Environmental Management 272, 111020. https://doi.org/10.1016/j.jenvman.2020.111020",
+    "- Palazon et al. 2015. J. Soils Sediments 15, 2067-2085. https://doi.org/10.1007/s11368-015-1175-6",
+    "",
+    "Sediment source fingerprinting in Glacial Landscapes:",
+    "- Navas et al. 2024. Geomorphology 460, 109250. https://doi.org/10.1016/j.geomorph.2024.109250",
+    "- Golosov et al. 2024. Geomorphology 461, 109312. https://doi.org/10.1016/j.geomorph.2024.109312",
+    "- Navas et al. 2022. Hydrological Processes 36(8), 4662. https://doi.org/10.1002/hyp.14662",
+    "- Navas et al. 2020. Geomorphology 367, 107304. https://doi.org/10.1016/j.geomorph.2020.107304",
+    "",
+    "Combining catchment modelling and sediment fingerprinting:",
+    "- Palazon et al. 2016. Science of the Total Environment 569, 1136-1148. https://doi.org/10.1016/j.scitotenv.2016.06.189",
+    "- Palazon et al. 2014. Solid Earth 5, 963-978. https://doi.org/10.5194/se-5-963-2014",
+    "",
+    "Tracking pollutants:",
+    "- Mohammadi et al. 2023. Science of the Total Environment, 892, 164432. https://doi.org/10.1016/j.scitotenv.2023.164432",
+    "",
+    "Mining:",
+    "- Crespo et al. 2023. Sustainability 15(15), 11856. https://doi.org/10.3390/su151511856",
+    sep = "\n"
+  )
+)

@@ -2,14 +2,14 @@
 % Please edit documentation in R/functions.R
 \name{select_tracers}
 \alias{select_tracers}
-\title{Select specific tracers from a data frame}
+\title{Subset specific tracers from a dataset}
 \usage{
 select_tracers(data, tracers)
 }
 \arguments{
 \item{data}{A data frame containing tracer data.}
 
-\item{tracers}{A character vector of tracers to select.}
+\item{tracers}{A character vector of tracers to select (e.g., c("Ba", "Fe", "Cr")).}
 }
 \value{
 A data frame containing only the specified tracer columns. The returned columns
@@ -22,7 +22,8 @@ and standard deviation for both the tracer and its concentration (e.g., "mean_tr
 "mean_cont_tracer1", "sd_tracer1", "sd_cont_tracer1").
 }
 \description{
-This function allows you to select a subset of tracer columns from a data frame.
+This function allows you to select a subset of tracer columns from a dataset.
 It is designed to work with both isotopic and non-isotopic datasets, and also
 with both averaged and raw data formats.
 }
+\keyword{internal}

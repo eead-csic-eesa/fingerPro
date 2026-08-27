@@ -1,10 +1,10 @@
-#' @title Consensus Ranking (CR) method for tracer selection
+#' @title Rank tracers using the Consensus Ranking (CR) method
 #'
 #' @description This function computes the Consensus Ranking (CR) method, an ensemble technique to identify non-conservative and dissenting tracers in sediment fingerprinting studies. The method combines predictions from single-tracer models and is based on a scoring function derived from a series of random "debates" between tracers.
 #'
-#' @param data A data frame containing sediment source and mixture data. Users should ensure their data is in a valid format by using the `check_database()` function before running the CR method.
+#' @param data A data frame containing sediment source and mixture data.
 #' @param debates An integer specifying the target number of debates each tracer should participate in. The function will run until each tracer has participated in at least this many debates.
-#' @param seed An integer used to initialize the random number generator for reproducibility.
+#' @param rng_init An integer value used to initialize the random number generator (RNG). Providing a starting value ensures that the sequence of random numbers generated is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no value is provided, a random one will be generated.
 #'
 #' @return A data frame containing the CR score for each tracer. The score, ranging from 100 to 0, indicates the tracer's rank in terms of consensus and conservativeness. Tracers are ordered by their score in descending order, with the most conservative tracers having high scores and dissenting tracers having low scores.
 #'
@@ -20,16 +20,23 @@
 #' Lizaga, I., Latorre, B., Gaspar, L., & Navas, A. (2020). Consensus ranking as a method to identify non-conservative and dissenting tracers in fingerprinting studies. *Science of The Total Environment*, *720*, 137537. https://doi.org/10.1016/j.scitotenv.2020.137537
 #'
 #' @export
-CR <- function(data, debates = 1000, seed = 123456)
+CR <- function(data, debates = 1000, rng_init = NULL)
 {
-	source <- inputSource(data)
-	mixture <- inputMixture(data)
+  source <- inputSource(data)
+  mixture <- inputMixture(data)
 	
   source <- data.matrix(source[-1])
   mixture <- data.matrix(mixture[-1])
 
-  set.seed(seed)
-    
+  # If no RNG is provided, generate a random integer for reproducibility
+  if (is.null(rng_init))
+  {
+    rng_init <- sample(1:1000000, 1)
+    message("No RNG initialization value provided. Using random starting value: ", rng_init)
+  }
+
+  set.seed(rng_init)
+
   # normalize
   cols <- (ncol(source)-1)/2
   for (col in c(1:cols))

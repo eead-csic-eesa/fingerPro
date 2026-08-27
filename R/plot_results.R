@@ -1,4 +1,4 @@
-#' Displays the results of an unmixing analysis
+#' Visualize the results of a sediment unmixing analysis
 #'
 #' This function generates a plot showing the relative contribution of sediment sources to each mixture. The output of the \code{unmix} function should be used as input for this function.
 #' 

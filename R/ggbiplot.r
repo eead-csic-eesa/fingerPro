@@ -41,7 +41,7 @@
 #' @param ...             ...
 #' 
 #' @return                a ggplot2 plot
-#' @export
+#' @keywords internal
 #' 
 ggbiplot <- function(pcobj, choices = 1:2, scale = 1, pc.biplot = TRUE, 
                       obs.scale = 1 - scale, var.scale = scale, 

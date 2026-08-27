@@ -2,7 +2,7 @@
 % Please edit documentation in R/unmix.R
 \name{unmix}
 \alias{unmix}
-\title{Unmix sediment mixtures}
+\title{Perform sediment source apportionment (unmixing)}
 \usage{
 unmix(
   data,
@@ -11,11 +11,11 @@ unmix(
   lvp = TRUE,
   constrained = FALSE,
   resolution = NA,
-  seed = 123456L
+  rng_init = 123456L
 )
 }
 \arguments{
-\item{data}{Data frame containing sediment source and mixture data. Users should ensure their data is in a valid format by using the check_database() function before running the unmixing process.}
+\item{data}{Data frame containing sediment source and mixture data.}
 
 \item{iter}{The number of iterations for the variability analysis. Increase `iter` to improve the reliability and accuracy of the results. A sufficient number of iterations is reached when the output no longer changes significantly with further increases.}
 
@@ -27,7 +27,7 @@ unmix(
 
 \item{resolution}{An integer specifying the number of samples used in each hypercube dimension for constrained optimization. This parameter is only used when constrained = TRUE and is required to perform the analysis.}
 
-\item{seed}{An integer value used to initialize the random number generator. Setting a seed ensures that the sequence of random numbers generated during the unmixing is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no seed is provided, a random seed will be generated.}
+\item{rng_init}{An integer value used to initialize the random number generator (RNG). Providing a starting value ensures that the sequence of random numbers generated is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no value is provided, a random one will be generated.}
 }
 \value{
 A data frame containing the relative contributions of the sediment sources to each sediment mixture, across all iterations. The second and third rows of the result correspond to the solution for the central or mean value of the sources. The output includes an ID column to identify each mixture, a GOF (Goodness of Fit) column, and columns for each source showing their calculated contributions.

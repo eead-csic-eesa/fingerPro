@@ -7,16 +7,16 @@
 #'   Possible values are "SD" for Standard Deviation or "SEM" for Standard Error of the Mean.
 #' @param iter Iterations in the source variability analysis.
 #' @param means Boolean to switch when using mean and sd data
-#' @param seed Seed for the random number generator
+#' @param rng_init An integer value used to initialize the random number generator (RNG). Providing a starting value ensures that the sequence of random numbers generated is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no value is provided, a random one will be generated.
 #'
 #' @return Data frame containing the relative contribution of the sediment sources for each sediment mixture and iterations
 #'
-#' @export
+#' @keywords internal
 #'
 
-unmix_unconstrained <- function(data, variability = "SEM", iter = 1000, means = F, seed = 123456L)
+unmix_unconstrained <- function(data, variability = "SEM", iter = 1000, means = F, rng_init = 123456L)
 {
-  set.seed(seed)
+  set.seed(rng_init)
   
   sr_names <- unique(data[, 2])
 
@@ -69,10 +69,9 @@ unmix_unconstrained <- function(data, variability = "SEM", iter = 1000, means = 
     
     csource <- matrix(, nrow = nsource, ncol = ntracer)
     
-    
-    cat(crayon::cyan(crayon::bold("Summary of the model inputs:\n")))
-    cat(ntracer, "variables from", nsource, "sources", "\n")
-    
+    #cat(crayon::cyan(crayon::bold("Summary of the model inputs:\n")))
+    #cat(inputMixture(data)[1,2]," (",inputMixture(data)[1,1],")\n")
+    #cat(ntracer, "tracers from", nsource, "sources", "\n")
     
     # Introduce the progress bar
     pb <- txtProgressBar(min = 0, max = iter, style = 3, width = 50, char = "=")

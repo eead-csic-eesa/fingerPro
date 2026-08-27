@@ -2,16 +2,14 @@
 % Please edit documentation in R/CB_method.R
 \name{CB_method}
 \alias{CB_method}
-\title{Conservative Balance (CB) Method for Isotopic Tracer Analysis}
+\title{Apply the Conservative Balance (CB) method for isotopic tracer analysis}
 \usage{
 CB_method(data)
 }
 \arguments{
 \item{data}{A data frame containing the isotopic tracer characteristics of
 sediment sources and mixtures. The data should be correctly formatted for
-isotopic analysis, including both isotopic ratio and isotopic content. Users
-should ensure their data is in a valid format by using the check_database() 
-function before running the CB method.}
+isotopic analysis, including both isotopic ratio and isotopic content.}
 }
 \value{
 A data frame where isotopic tracers have been converted into

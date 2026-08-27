@@ -4,7 +4,7 @@
 #'
 #' @param data Data frame containing source and mixtures data
 #'
-#' @export
+#' @keywords internal
 #' 
 inputMixture <- function(data) {
 

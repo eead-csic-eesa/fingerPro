@@ -5,7 +5,7 @@
 #' @param data Data frame containing source and mixtures data
 #' @param na.omit Boolean to omit or not NA values when computing the mean and SD
 #'
-#' @export
+#' @keywords internal
 #' 
 inputSource <- function(data, na.omit = T) {
 

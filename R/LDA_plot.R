@@ -1,16 +1,14 @@
-#' Linear discriminant analysis chart
+#' Perform and visualize Linear Discriminant Analysis (LDA)
 #'
 #' The function performs a linear discriminant analysis and displays the data in the relevant dimensions.
 #'
 #' @param data Data frame containing source and mixtures data
-#' @param P3D Boolean to switch between 2 to 3 dimensional chart
 #' @param text Boolean to show or not the identification number of each sample point in the plot
 #' @param colors Allows choosing between a different set of colors in the plots
-#' @param interactive Boolean to determine whether the plot should be interactive
 #' 
 #' @export
 #' 
-LDA_plot <- function(data, P3D = FALSE, text = TRUE, colors = NULL, interactive = FALSE) {
+LDA_plot <- function(data, text = TRUE, colors = NULL) {
 
 	# If data is averaged, convert it to a raw dataset
 	if(is_averaged(data)) {
@@ -66,6 +64,9 @@ LDA_plot <- function(data, P3D = FALSE, text = TRUE, colors = NULL, interactive 
     }
     default_colors <- colors
   }
+  
+  P3D <- FALSE
+  interactive <- FALSE
   
   # Check if 3D plot is requested
   if (P3D == TRUE) {

@@ -2,20 +2,16 @@
 % Please edit documentation in R/LDA_plot.R
 \name{LDA_plot}
 \alias{LDA_plot}
-\title{Linear discriminant analysis chart}
+\title{Perform and visualize Linear Discriminant Analysis (LDA)}
 \usage{
-LDA_plot(data, P3D = FALSE, text = TRUE, colors = NULL, interactive = FALSE)
+LDA_plot(data, text = TRUE, colors = NULL)
 }
 \arguments{
 \item{data}{Data frame containing source and mixtures data}
 
-\item{P3D}{Boolean to switch between 2 to 3 dimensional chart}
-
 \item{text}{Boolean to show or not the identification number of each sample point in the plot}
 
 \item{colors}{Allows choosing between a different set of colors in the plots}
-
-\item{interactive}{Boolean to determine whether the plot should be interactive}
 }
 \description{
 The function performs a linear discriminant analysis and displays the data in the relevant dimensions.

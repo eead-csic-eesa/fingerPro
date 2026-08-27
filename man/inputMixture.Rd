@@ -12,3 +12,4 @@ inputMixture(data)
 \description{
 The function select and extract the sediment mixtures of the raw dataset.
 }
+\keyword{internal}

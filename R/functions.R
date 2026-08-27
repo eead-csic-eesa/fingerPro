@@ -10,7 +10,7 @@
 #' data (i.e., contains a column named "n" and a balanced set of "mean_" and "sd_" 
 #' tracer columns). Returns `FALSE` otherwise.
 #'
-#' @export
+#' @keywords internal
 is_averaged <- function(data)
 {
 	if (sum(grepl("^n$", tolower(colnames(data)))) == 1)
@@ -50,7 +50,7 @@ is_averaged <- function(data)
 #' isotopic format. Returns `FALSE` otherwise, and provides a descriptive
 #' message explaining the reason for the failure.
 #'
-#' @export
+#' @keywords internal
 is_isotopic <- function(data)
 {
 	# Get the column names from the data frame
@@ -126,50 +126,118 @@ is_isotopic <- function(data)
 #' @export
 raw_dataset <- function(data)
 {
-		# Build a raw dataset from the averaged data
-		source_n <- nrow(inputSource(data))
-		tracer_n <- ncol(inputMixture(data))-1
-		mixture_n <- nrow(inputMixture(data))
-		
-		raw_data <- data.frame(matrix(ncol = tracer_n+2, nrow = 0))
-		colnames(raw_data) <- colnames(data)[1:(tracer_n+2)]
-		
-		k <- 1
-		for (i in 1:source_n) {
-			for (j in 1:inputSource(data)[i,2*(tracer_n+1)]) {
-				raw_data[nrow(raw_data) + 1, ] <- NA
-				raw_data[k,1] <- k
-				raw_data[k,2] <- inputSource(data)[i,1]
-				for (l in 1:tracer_n) {
-					raw_data[k,l+2] <- rnorm(n = 1, mean = inputSource(data)[i,l+1], sd = inputSource(data)[i,l+1+tracer_n])
-				}
-				k <- k + 1
-			}
-		}
-		
-		for (i in 1:mixture_n) {
+	# If the data is not averaged, just return
+	if(!is_averaged(data))
+	{
+		return(data)
+	}
+
+	# Build a raw dataset from the averaged data
+	source_n <- nrow(inputSource(data))
+	tracer_n <- ncol(inputMixture(data))-1
+	mixture_n <- nrow(inputMixture(data))
+	
+	raw_data <- data.frame(matrix(ncol = tracer_n+2, nrow = 0))
+	colnames(raw_data) <- colnames(data)[1:(tracer_n+2)]
+	
+	k <- 1
+	for (i in 1:source_n) {
+		for (j in 1:inputSource(data)[i,2*(tracer_n+1)]) {
 			raw_data[nrow(raw_data) + 1, ] <- NA
-			for (j in 1:tracer_n) {
-				raw_data[k,j+2] <- inputMixture(data)[i,j+1]
-			}
 			raw_data[k,1] <- k
-			raw_data[k,2] <- inputMixture(data)[i,1]
+			raw_data[k,2] <- inputSource(data)[i,1]
+			for (l in 1:tracer_n) {
+				raw_data[k,l+2] <- rnorm(n = 1, mean = inputSource(data)[i,l+1], sd = inputSource(data)[i,l+1+tracer_n])
+			}
 			k <- k + 1
 		}
-		
-		colnames(raw_data) <- gsub("^mean_", "", colnames(raw_data))
-		
-		return(raw_data)
+	}
+	
+	for (i in 1:mixture_n) {
+		raw_data[nrow(raw_data) + 1, ] <- NA
+		for (j in 1:tracer_n) {
+			raw_data[k,j+2] <- inputMixture(data)[i,j+1]
+		}
+		raw_data[k,1] <- k
+		raw_data[k,2] <- inputMixture(data)[i,1]
+		k <- k + 1
+	}
+	
+	colnames(raw_data) <- gsub("^mean_", "", colnames(raw_data))
+	
+	return(raw_data)
 }
 
-#' @title Select specific tracers from a data frame
+#' @title Builds an averaged dataset from raw data
 #'
-#' @description This function allows you to select a subset of tracer columns from a data frame.
+#' @description Generates an averaged dataset from individual (non-averaged) observations.
+#'
+#' @param data A data frame containing raw source and mixture data.
+#' @param na.omit Boolean to omit or not NA values when computing the mean and SD
+#' @return A data frame representing the averaged dataset.
+#'
+#' @export
+averaged_dataset <- function(data, na.omit = T)
+{
+	# If the data is averaged, just return
+	if(is_averaged(data))
+	{
+		return(data)
+	}
+
+  # reorder groups
+  data[, 2] <- factor(data[, 2], levels = unique(data[, 2]))
+  
+  sources <- data[!data[,2] == levels(data[,2])[nlevels(data[,2])],]
+  sources2 <- sources[ order(sources[,2]),]
+  s_groups <- droplevels(sources2[,2])
+
+  data_mean <- aggregate(sources2[,3:ncol(sources2)], list(s_groups), mean, na.rm = na.omit)
+  data_mean[[1]] <- NULL
+  colnames(data_mean) <- paste('mean_', colnames(data_mean), sep='')
+  
+  data_sd <- aggregate(sources2[,3:ncol(sources2)], list(s_groups), sd, na.rm = na.omit)
+  data_sd <- as.data.frame(data_sd[,-1])
+  colnames(data_sd) <- paste('sd_', colnames(data_sd), sep='')
+  
+  n <- data.frame(table(sources2[,2]))
+  n[[1]] <- NULL
+  n <- as.data.frame(n[-nrow(n),])
+  colnames(n) <- 'n'
+  
+  samples <- head(levels(data[,2]), n=-1)
+
+  sources <- cbind(samples, data_mean, data_sd, n)
+  
+  mixtures <- data[data[,2] == levels(data[,2])[nlevels(data[,2])],]
+  
+  rownames(mixtures) <- NULL
+  data_mean <- as.data.frame(mixtures[,-(0:2)])
+  colnames(data_mean) <- gsub("^mean_", "", colnames(data_mean))
+  colnames(data_mean) <- paste('mean_', colnames(data_mean), sep='')
+  samples <- as.vector(tail(data[,2], n=nrow(data_mean)))
+  data_sd <- data_mean * 0
+  colnames(data_sd) <- gsub("^mean_", "sd_", colnames(data_mean))
+  mixtures <- cbind(samples, data_mean, data_sd)
+  mixtures$n <- 1
+	
+	averaged_data <- rbind(sources, mixtures)
+
+	averaged_data$ID <- seq_len(nrow(averaged_data))
+	all_cols <- colnames(averaged_data)
+	averaged_data <- averaged_data[, c("ID", setdiff(all_cols, "ID"))]
+	
+	return(averaged_data)
+}
+
+#' @title Subset specific tracers from a dataset
+#'
+#' @description This function allows you to select a subset of tracer columns from a dataset.
 #' It is designed to work with both isotopic and non-isotopic datasets, and also
 #' with both averaged and raw data formats.
 #'
 #' @param data A data frame containing tracer data.
-#' @param tracers A character vector of tracers to select.
+#' @param tracers A character vector of tracers to select (e.g., c("Ba", "Fe", "Cr")).
 #'
 #' @return A data frame containing only the specified tracer columns. The returned columns
 #' will be selected based on the data format. For non-isotopic and raw data, it selects
@@ -180,7 +248,7 @@ raw_dataset <- function(data)
 #' and standard deviation for both the tracer and its concentration (e.g., "mean_tracer1",
 #' "mean_cont_tracer1", "sd_tracer1", "sd_cont_tracer1").
 #'
-#' @export
+#' @keywords internal
 select_tracers <- function(data, tracers) {
   names <- colnames(data)
   
@@ -200,7 +268,7 @@ select_tracers <- function(data, tracers) {
   }
 }
 
-#' @title Verify the integrity of a sediment unmixing database
+#' @title Read a sediment unmixing database
 #'
 #' @description This function automatically infers the type of sediment database
 #' ("raw", "averaged", or "isotopic") based on its column names and verifies its integrity.
@@ -258,12 +326,93 @@ select_tracers <- function(data, tracers) {
 #'   \item{\strong{n}:} The number of measurements.
 #' }
 #'
+#' @param file Character string. The name of the CSV file or the path to it.
+#' @param mixture Integer. The index of the mixture sample to keep if multiple are present. Defaults to 1.
+#'
+#' @return A data frame representing the sediment unmixing database
+#'
+#' @export
+read_database <- function(file, mixture = 1) {
+
+	# Determine the correct file path
+	if (file.exists(file)) {
+		path <- file
+	} else {
+		# Check if the file exists within the package's extdata folder
+		path <- system.file("extdata", file, package = "fingerPro")
+	}
+
+	# Check if a valid path was actually found
+	if (path == "") {
+		stop("File not found locally or in package 'extdata'.")
+	}
+
+	# Read the data
+	data <- read.csv(path)
+
+	# Validate the data using your check_database function
+	if (!isTRUE(check_database(data))) {
+		stop()
+	}
+	
+	# Handle multiple mixture samples
+	# Get the number of rows that are identified as mixtures
+	mixture_n <- nrow(inputMixture(data))
+
+	message(paste0("Mixtures (", mixture_n, "): ", paste(tail(data[[1]], mixture_n), collapse = ", ")))
+		
+	if (mixture_n > 1) {
+		# Check if the requested index is valid
+		if (mixture > mixture_n || mixture < 1) {
+			stop(paste0("Selected index (", mixture, ") is out of range. Only ", mixture_n, " mixtures found."))
+		}
+		
+		# Calculate the starting row index of the mixture block
+		total_rows <- nrow(data)
+		mixture_start_idx <- total_rows - mixture_n + 1
+
+		# Identify the rows to remove:
+		# All rows from the start of the mixture block to the end...
+		all_mixture_rows <- mixture_start_idx:total_rows
+		# ...except for the specific one the user wants to keep
+		rows_to_remove <- all_mixture_rows[-mixture]
+
+		data <- data[-rows_to_remove, ]
+		
+		if(mixture == 1) {
+			message(paste0("Selecting first mixture (", tail(data, 1)[,1], ") by default. Use the 'mixture' parameter to change."))
+		}
+		else {
+			message(paste0("Selecting mixture: ", tail(data, 1)[,1]))
+		}
+	}
+
+	# Find which columns (tracers) in the mixture have zero values
+	# We exclude the first ID column
+	mixture_data <- inputMixture(data)[, -1]
+	zero_tracers <- colnames(mixture_data)[colSums(mixture_data == 0) > 0]
+
+	if (length(zero_tracers) > 0) {
+		  # Create a string of the affected tracer names
+		  zero_tracers <- sub("^mean_", "", zero_tracers)
+		  tracer_names <- paste(zero_tracers, collapse = ", ")
+		  
+		  warning(paste0("Zero values detected in the following mixture tracers: ", tracer_names, 
+		                 ". Consider removing these tracers before proceeding."))
+	}
+	
+	return(data)
+}
+
+
+#' @title Verify the integrity of a sediment unmixing database
+#'
 #' @param data A data frame to be checked.
 #'
 #' @return A logical value (`TRUE` if the database is valid, `FALSE` otherwise).
 #'   If the check fails, the function will also print a descriptive error message.
 #'
-#' @export
+#' @keywords internal
 check_database <- function(data) {
   
   # Check if the input is a data frame
@@ -364,12 +513,12 @@ check_database <- function(data) {
     if(is_isotopic)
     {
     	message("Sources (", num_sources,"): ", paste(head(unique(data$samples), n=-1), collapse = ", "))
-    	message("Isotopic tracers (", (num_tracers/2), "): ", paste(gsub("^mean_", "", col_names[3:(2 + num_tracers/2)]), collapse = ", "))
+    	message("Tracers isotopic (", (num_tracers/2), "): ", paste(gsub("^mean_", "", col_names[3:(2 + num_tracers/2)]), collapse = ", "))
     }
     else
     {
     	message("Sources (", num_sources,"): ", paste(head(unique(data$samples), n=-1), collapse = ", "))
-    	message("Scalar tracers (", num_tracers, "): ", paste(gsub("^mean_", "", mean_cols), collapse = ", "))
+    	message("Tracers scalar (", num_tracers, "): ", paste(gsub("^mean_", "", mean_cols), collapse = ", "))
 	  }
     
     return(TRUE)
@@ -421,94 +570,15 @@ check_database <- function(data) {
     if(is_isotopic)
     {
     	message("Sources (", num_sources,"): ", paste(head(unique(data$samples), n=-1), collapse = ", "))
-    	message("Isotopic tracers (", (num_tracers/2), "): ", paste(col_names[3:(2 + num_tracers/2)], collapse = ", "))
+    	message("Tracers isotopic (", (num_tracers/2), "): ", paste(col_names[3:(2 + num_tracers/2)], collapse = ", "))
     }
     else
     {
     	message("Sources (", num_sources,"): ", paste(head(unique(data$samples), n=-1), collapse = ", "))
-    	message("Scalar tracers (", num_tracers, "): ", paste(col_names[3:(2 + num_tracers)], collapse = ", "))
+    	message("Tracers scalar (", num_tracers, "): ", paste(col_names[3:(2 + num_tracers)], collapse = ", "))
 	  }
     
     return(TRUE)
   }
-}
-
-#' @title Create a virtual sediment mixture
-#'
-#' @description This function generates a virtual sediment mixture based on the
-#' characteristics of existing sediment sources and a set of user-defined apportionment
-#' weights. It effectively simulates a mixture with known source contributions.
-#'
-#' @param data A data frame containing the characteristics of the sediment sources.
-#'   Users should ensure their data is in a valid format by using the `check_database()`
-#'   function before running this function.
-#' @param weights A numeric vector representing the proportional contributions (apportionment
-#'   values) of each source to the virtual mixture. The order of weights in the vector must
-#'   correspond to the order of sources in the `data` frame. The sum of `weights` should
-#'   ideally equal 1.
-#'
-#' @return A data frame representing the virtual mixture. This data frame will have the
-#'   same structure as a single row for a mixture in your input `data`, but with tracer
-#'   values calculated based on the provided `weights`.
-#'
-#' @details A virtual mixture is a hypothetical sediment sample created by mathematically
-#' combining the tracer characteristics of known sources according to specified proportions (`weights`).
-#' This is a powerful tool in sediment fingerprinting for:
-#' \itemize{
-#'   \item **Consistency Checks**: Comparing observed mixture data against a virtual mixture
-#'     can help assess the consistency of a dataset or the validity of an unmixing solution.
-#'   \item **Scenario Testing**: Simulating mixtures under different hypothetical source contributions
-#'     to understand how changes might affect sediment composition.
-#'   \item **Model Validation**: Generating known virtual mixtures to test the accuracy and
-#'     performance of unmixing models.
-#' }
-#' The function calculates the tracer values for the virtual mixture by taking the weighted
-#' average of the corresponding tracer values from each source.
-#'
-#' @export
-virtual_mixture <- function(data, weights)
-{
-  # Check for isotopic tracers, which are not supported by this function.
-  if (any(grepl("^cont_", colnames(data)))) {
-    stop("Error: This function does not support isotopic datasets.")
-  }
- 
-  # Check if weights is a numeric vector
-  if (!is.numeric(weights) || !is.vector(weights)) {
-    stop("Error: 'weights' must be a numeric vector.")
-  }
-  
-  # Check if multiple mixture samples are present in the data
-  if (nrow(inputMixture(data)) > 1) {
-    stop("Error: Dataset has multiple mixtures. This function works with a single mixture only.")
-  }
-  
-	source <- inputSource(data)
-	mixture <- inputMixture(data)
-	source_n <- nrow(source)
-	tracer_n <- (ncol(source)-2)/2
-
-  # Check if the length of weights is equal to the number of sources
-  if (length(weights) != source_n) {
-    stop(paste0("Error: The length of 'weights' (", length(weights), 
-		") must be equal to the number of sources (", source_n, ")."))
-  }
-  
-  # Check if the sum of weights is approximately 1
-  if (abs(sum(weights) - 1) > 1e-6) {
-    warning("Warning: The sum of 'weights' does not equal 1.")
-  }
-  
-  # Compute the tracer values for the virtual mixture
-  # by calculating the weighted average of each tracer from the sources.
-	for (i in 1:tracer_n) {
-		avg <- 0.0
-		for (j in 1:source_n) {
-			avg <- avg + source[j,i+1] * weights[j]
-		}
-		data[nrow(data),i+2] <- avg
-	}
-	
-  return(data)
 }
 

@@ -14,3 +14,4 @@ inputSource(data, na.omit = T)
 \description{
 The function select and extract the source samples of the dataset.
 }
+\keyword{internal}

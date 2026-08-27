@@ -2,20 +2,37 @@
 % Please edit documentation in R/ternary_diagram.R
 \name{ternary_diagram}
 \alias{ternary_diagram}
-\title{Visualize individual tracer analysis as ternary diagrams}
+\title{Visualize tracer distributions using ternary diagrams}
 \usage{
-ternary_diagram(data, tracers = c(1:2), rows = 1, cols = 2, solution = NA)
+ternary_diagram(
+  data,
+  page = 1,
+  rows = 2,
+  cols = 3,
+  solution = NA,
+  completion_method = "virtual",
+  iter = 5000,
+  rng_init = NULL
+)
 }
 \arguments{
-\item{data}{A data frame containing the results from the individual tracer analysis function.}
+\item{data}{A data frame containing the characteristics of sediment sources and mixtures.}
 
-\item{tracers}{A vector specifying the indices of the tracers to be displayed.}
+\item{page}{Integer specifying which set of tracers to display (default = 1).}
 
-\item{rows}{An integer specifying the number of rows in the grid of ternary diagrams.}
+\item{rows}{An integer specifying the number of rows in the grid.}
 
-\item{cols}{An integer specifying the number of columns in the grid of ternary diagrams.}
+\item{cols}{An integer specifying the number of columns in the grid.}
 
-\item{solution}{A vector containing an optional reference solution for visual comparison.}
+\item{solution}{A vector containing an optional reference solution.}
+
+\item{completion_method}{A character string specifying the method for selecting the required remaining tracers to form a determined system of equations in the individual tracer analysis. Possible values are:
+"virtual": Fabricate remaining tracers virtually using generated random numbers. This method is valuable for an initial assessment of the tracer's consistency without the influence of other tracers from the dataset.
+"random": Randomly select remaining tracers from the dataset to complete the system. This method is useful for understanding how the tracer behaves when paired with others from the dataset.}
+
+\item{iter}{The number of iterations for the variability analysis in the individual tracer analysis. Increase `iter` to improve the reliability and accuracy of the results. A sufficient number of iterations is reached when the output no longer changes significantly with further increases.}
+
+\item{rng_init}{An integer value used to initialize the random number generator (RNG). Providing a starting value ensures that the sequence of random numbers generated is reproducible. This is useful for debugging, testing, and comparing results across different runs. If no value is provided, a random one will be generated.}
 }
 \value{
 A grid of ternary diagrams, each representing the predicted apportionments for a specific tracer. If there are three sources, the function generates one ternary triangle for each tracer. If there are four sources, the function generates six triangles for each tracer. The six triangles represent the following source combinations at their vertices:

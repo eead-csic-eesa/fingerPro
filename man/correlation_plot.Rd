@@ -2,7 +2,7 @@
 % Please edit documentation in R/correlation_plot.R
 \name{correlation_plot}
 \alias{correlation_plot}
-\title{Correlation matrix chart}
+\title{Create a correlation matrix chart for tracer redundancy}
 \usage{
 correlation_plot(
   data,
@@ -13,7 +13,7 @@ correlation_plot(
 )
 }
 \arguments{
-\item{data}{Data frame containing sediment source and mixture data. Users should ensure their data is in a valid format by using the check_database() function before running this function.}
+\item{data}{Data frame containing sediment source and mixture data.}
 
 \item{columns}{Numeric vector containing the index of the columns in the chart (the first column refers to the grouping variable)}
 

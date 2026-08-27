@@ -1,4 +1,4 @@
-#' Range test
+#' Verifies if target sediment concentrations fall within the range of potential source values.
 #'
 #' Function that excludes the properties of the sediment mixture/s outside the minimum and maximum values in the sediment sources.
 #'

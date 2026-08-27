@@ -1,4 +1,4 @@
-#' @title Discriminant Function Analysis (DFA) Test
+#' @title Discriminant Function Analysis (DFA) test
 #'
 #' @description Performs a stepwise forward variable selection using the Wilk's Lambda criterion to identify the most discriminant tracers in a dataset.
 #'
@@ -7,7 +7,7 @@
 #'
 #' @return A data frame containing only the tracers that pass the DFA test.
 #'
-#' @export
+#' @keywords internal
 DFA_test <- function(data, niveau = 0.1) {
 
 	# If data is averaged, convert it to a raw dataset

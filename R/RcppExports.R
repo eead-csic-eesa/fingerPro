@@ -9,10 +9,11 @@
 #'   Possible values are 0 for Standard Deviation or 1 for Standard Error of the Mean.
 #' @param iter Iterations in the variability analysis.
 #' @param resolution Integer specifying the number of samples used in each hypercube dimension.
-#' @param seed Seed for the random number generator
+#' @param rng_init An integer value used to initialize the random number generator (RNG).
+#' @keywords internal
 #' @return Data frame containing the relative contribution of the sediment sources for each sediment mixture and iterations
-unmix_c_lvp <- function(sources, mixtures, variability, iter = 100L, resolution = 100L, seed = 69512L) {
-    .Call('_fingerPro_unmix_c_lvp', PACKAGE = 'fingerPro', sources, mixtures, variability, iter, resolution, seed)
+unmix_c_lvp <- function(sources, mixtures, variability, iter = 100L, resolution = 100L, rng_init = 123456L) {
+    .Call('_fingerPro_unmix_c_lvp', PACKAGE = 'fingerPro', sources, mixtures, variability, iter, resolution, rng_init)
 }
 
 #' Unmix sediment mixtures using constrained optimization and classical variability propagation
@@ -23,10 +24,11 @@ unmix_c_lvp <- function(sources, mixtures, variability, iter = 100L, resolution 
 #'   Possible values are 0 for Standard Deviation or 1 for Standard Error of the Mean.
 #' @param iter Iterations in the variability analysis.
 #' @param resolution Integer specifying the number of samples used in each hypercube dimension.
-#' @param seed Seed for the random number generator
+#' @param rng_init An integer value used to initialize the random number generator (RNG).
+#' @keywords internal
 #' @return Data frame containing the relative contribution of the sediment sources for each sediment mixture and iterations
-unmix_c <- function(sources, mixtures, variability, iter = 100L, resolution = 100L, seed = 69512L) {
-    .Call('_fingerPro_unmix_c', PACKAGE = 'fingerPro', sources, mixtures, variability, iter, resolution, seed)
+unmix_c <- function(sources, mixtures, variability, iter = 100L, resolution = 100L, rng_init = 123456L) {
+    .Call('_fingerPro_unmix_c', PACKAGE = 'fingerPro', sources, mixtures, variability, iter, resolution, rng_init)
 }
 
 #' least_squares_c
@@ -34,10 +36,11 @@ unmix_c <- function(sources, mixtures, variability, iter = 100L, resolution = 10
 #' @param sources Data frame containing sediment source samples
 #' @param mixtures Data frame containing mixture samples
 #' @param iter Iterations in the variability analysis.
-#' @param seed Seed for the random number generator
+#' @param rng_init An integer value used to initialize the random number generator (RNG).
+#' @keywords internal
 #' @return Data frame containing the relative contribution solved by the least squares method
-least_squares_c <- function(sources, mixtures, iter = 100L, seed = 69512L) {
-    .Call('_fingerPro_least_squares_c', PACKAGE = 'fingerPro', sources, mixtures, iter, seed)
+least_squares_c <- function(sources, mixtures, iter = 100L, rng_init = 123456L) {
+    .Call('_fingerPro_least_squares_c', PACKAGE = 'fingerPro', sources, mixtures, iter, rng_init)
 }
 
 #' triangles_random_c
@@ -46,10 +49,11 @@ least_squares_c <- function(sources, mixtures, iter = 100L, seed = 69512L) {
 #' @param mixtures Data frame containing mixture samples
 #' @param tracer Tracer in which implement the function
 #' @param iter Iterations in the variability analysis.
-#' @param seed Seed for the random number generator
+#' @param rng_init An integer value used to initialize the random number generator (RNG).
+#' @keywords internal
 #' @return List of data frames containing all the possible prediction for each tracer
-triangles_random_c <- function(sources, mixtures, tracer = 0L, iter = 100L, seed = 69512L) {
-    .Call('_fingerPro_triangles_random_c', PACKAGE = 'fingerPro', sources, mixtures, tracer, iter, seed)
+triangles_random_c <- function(sources, mixtures, tracer = 0L, iter = 100L, rng_init = 123456L) {
+    .Call('_fingerPro_triangles_random_c', PACKAGE = 'fingerPro', sources, mixtures, tracer, iter, rng_init)
 }
 
 #' triangles_virtual_c
@@ -58,9 +62,10 @@ triangles_random_c <- function(sources, mixtures, tracer = 0L, iter = 100L, seed
 #' @param mixtures Data frame containing mixture samples
 #' @param tracer Tracer in which implement the function
 #' @param iter Iterations in the variability analysis.
-#' @param seed Seed for the random number generator
+#' @param rng_init An integer value used to initialize the random number generator (RNG).
+#' @keywords internal
 #' @return List of data frames containing all the possible prediction for each tracer inside the dataset
-triangles_virtual_c <- function(sources, mixtures, tracer = 0L, iter = 100L, seed = 69512L) {
-    .Call('_fingerPro_triangles_virtual_c', PACKAGE = 'fingerPro', sources, mixtures, tracer, iter, seed)
+triangles_virtual_c <- function(sources, mixtures, tracer = 0L, iter = 100L, rng_init = 123456L) {
+    .Call('_fingerPro_triangles_virtual_c', PACKAGE = 'fingerPro', sources, mixtures, tracer, iter, rng_init)
 }
 

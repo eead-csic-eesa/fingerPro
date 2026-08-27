@@ -1,110 +1,140 @@
-#' @title Box and whiskers plot for sediment tracers
+#' @title Generate box-and-whisker plots for sediment tracers
+#' @description This function creates a series of box and whisker plots arranged in a grid.
+#' It uses a paging system to prevent overlapping and ensures equal-sized plots.
 #'
-#' @description This function creates a series of box and whisker plots to visualize the distribution and variability of individual tracers within a dataset. It is designed to work with sediment source and mixture data, automatically adapting to averaged or raw data formats.
+#' @param data A data frame containing sediment source and mixture data.
+#' @param page Integer specifying which set of tracers to display (default = 1).
+#' @param n_row Number of rows per page (default = 3).
+#' @param n_col Number of columns per page (default = 2).
+#' @param colors Optional character vector of colors for the groups.
 #'
-#' @param data A data frame containing sediment source and mixture data. Users should ensure their data is in a valid format by using the check_database() function before running this function.
-#' @param tracers A numeric vector specifying the column indices of the tracers to be plotted. The index 1 corresponds to the first tracer column after the sample ID and group columns. If NULL (the default), plots will be generated for all tracer columns.
-#' @param ncol An integer specifying the number of charts to display per row in the final plot layout.
-#' @param colors A character vector of colors to use for the box plots. The colors are applied sequentially to each group (sources and mixture).
-#'
-#' @details This function is a wrapper for ggplot2 that automates the creation of a series of box plots, one for each tracer. The function first checks if the input data is averaged, and if so, converts it to a virtual raw dataset using the raw_dataset() function to enable the box plot visualization.
-#'
-#' Each plot displays the distribution of a single tracer, with different groups (sources and mixtures) represented by separate box plots. In addition to the standard five-number summary (median, hinges, and whiskers), the function also overlays the sample count and the mean value for each group, providing a more detailed summary of the data.
-#'
-#' The final output is a multi-panel plot arranged in a grid, with an optional legend depending on the input data.
-#'
+#' @import ggplot2
+#' @import grid
+#' @import gridExtra
+#' @import reshape
 #' @export
-box_plot <- function(data, tracers = NULL, ncol = 3, colors = NULL) {
+box_plot <- function(data, page = 1, n_row = 2, n_col = 3, colors = NULL) {
 
-	# If data is averaged, convert it to a raw dataset
-	if(is_averaged(data)) {
-		data <- raw_dataset(data)
-	}
-	
-	if(is.null(tracers)) {
-		tracers <- c(1:(ncol(inputMixture(data))-1))
-	}
-
-  # reorder the groups
+  # 1. Initial Data Prep (fingerPro standards)
+  if(is_averaged(data)) {
+    data <- raw_dataset(data)
+  }
+  
+  # Ensure groups are factors for consistent plotting
   data[, 2] <- factor(data[, 2], levels = unique(data[, 2]))
-
+  group_col <- colnames(data)[2]
+  
+  # Melt data for ggplot2
   dat_plot <- reshape::melt(data, id = c(1, 2))
+  
+  # 2. Paging Logic
+  all_tracer_names <- unique(dat_plot$variable)
+  total_tracers <- length(all_tracer_names)
+  plots_per_page <- n_row * n_col
+  total_pages <- ceiling(total_tracers / plots_per_page)
 
-  funclist <- list()
-  for (i in 1:length(tracers)) {
-    eval(parse(text = paste(
-      "funclist[[", toString(i), "]] <- function(x) {\n",
-      " y <- dat_plot[dat_plot$variable == unique(dat_plot$variable)[tracers[", toString(i), "]],4]\n",
-      " return(data.frame(y = min(y) - 0.05 * (max(y) - min(y)), label = paste0('n=', length(x))))\n",
-      "}"
-    )))
+  if (page > total_pages || page < 1) {
+    stop(paste0("Page ", page, " not found. Total pages available: ", total_pages))
   }
+  
+  start_idx <- ((page - 1) * plots_per_page) + 1
+  end_idx <- min(page * plots_per_page, total_tracers)
+  selected_tracers <- all_tracer_names[start_idx:end_idx]
 
-  funclist2 <- list()
-  for (i in 1:length(tracers)) {
-    eval(parse(text = paste(
-      "funclist2[[", toString(i), "]] <- function(x) {\n",
-      "  y <- dat_plot[dat_plot$variable == unique(dat_plot$variable)[tracers[", toString(i), "]],4]\n",
-      "  return(data.frame(y = median(x) + 0.03 * (max(y) - min(y)), label = round(mean(x), 1)))\n",
-      "}"
-    )))
-  }
+  # Console Feedback
+  message(sprintf("Page %i/%i | Showing tracers %i to %i", 
+                  page, total_pages, start_idx, end_idx))
 
+  # 3. Legend Extraction Utility
   g_legend <- function(a.gplot) {
     tmp <- ggplot_gtable(ggplot_build(a.gplot))
     leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
-    if (length(leg) > 0) {
-      legend <- tmp$grobs[[leg]]
-      return(legend)
-    } else {
-      return(NULL)
-    }
+    if (length(leg) > 0) return(tmp$grobs[[leg]]) else return(NULL)
   }
 
-  blank <- grid::grid.rect(gp = grid::gpar(col = "white"))
-
+  # 4. Generate the List of Plots
   glist <- list()
-  j <- 1
-  for (i in 1:length(tracers)) {
-    p <- ggplot(dat_plot[dat_plot$variable == unique(dat_plot$variable)[tracers[i]], ],
-                aes_string(x = colnames(data)[2], y = "value", color = colnames(data)[2])) +
-      geom_boxplot() +
-      ggtitle(unique(dat_plot$variable)[tracers[i]]) +
-      theme(plot.title = element_text(hjust = 0.5)) +
-      xlab("") +
-      ylab("") +
-      stat_summary(fun.data = funclist[[i]], geom = "text", fontface = "bold", color="white", alpha = 0.5, size = 3.9) +
-      stat_summary(fun.data = funclist[[i]], geom = "text", fontface = "bold", color="white", alpha = 0.5, size = 4.0) +
-      stat_summary(fun.data = funclist[[i]], geom = "text", fontface = "bold", color="white", alpha = 0.5, size = 4.1) +
-      stat_summary(fun.data = funclist[[i]], geom = "text", fontface = "bold", color="white", alpha = 0.5, size = 4.2) +
-      stat_summary(fun.data = funclist[[i]], geom = "text", aes(color = !!sym(colnames(data)[2]))) +
-      stat_summary(fun.data = funclist2[[i]], geom = "text", fontface = "bold", color="white", alpha = 0.5, size = 3.9) +
-      stat_summary(fun.data = funclist2[[i]], geom = "text", fontface = "bold", color="white", alpha = 0.5, size = 4.0) +
-      stat_summary(fun.data = funclist2[[i]], geom = "text", fontface = "bold", color="white", alpha = 0.5, size = 4.1) +
-      stat_summary(fun.data = funclist2[[i]], geom = "text", fontface = "bold", color="white", alpha = 0.5, size = 4.2) +
-      stat_summary(fun.data = funclist2[[i]], geom = "text", aes(color = !!sym(colnames(data)[2]))) +
-      theme(axis.text.x = element_text(angle = 90)) +
-      theme(legend.position = "none")
+  mylegend <- NULL
+
+  for (tracer in selected_tracers) {
     
-    if (!is.null(colors)) {
-      p <- p + scale_color_manual(values = colors) + scale_fill_manual(values = colors)
-    }
-    
-    glist[[j]] <- p
-    
-    if (i == 1) {
-      mylegend <- g_legend(p)
-      if (!is.null(mylegend)) {
-        j <- j + 1
-        glist[[j]] <- mylegend
+    p_item <- local({
+      
+      current_tracer <- tracer
+      plot_sub <- dat_plot[dat_plot$variable == current_tracer, ]
+      
+      # Calculate range and min for THIS specific tracer graph
+      y_vals <- plot_sub$value
+      y_min_total <- min(y_vals, na.rm = TRUE)
+      y_max_total <- max(y_vals, na.rm = TRUE)
+      y_range_total <- y_max_total - y_min_total
+      
+      # Buffer for the labels at the bottom
+      plot_bottom <- y_min_total - (0.05 * y_range_total)
+
+      p <- ggplot(plot_sub, aes(x = .data[[group_col]], y = value, color = .data[[group_col]])) +
+        geom_boxplot() +
+        ggtitle(current_tracer) +
+        # Force the y-axis to accommodate the labels at the bottom consistently
+        expand_limits(y = plot_bottom) +
+        theme_bw() +
+        theme(
+          axis.text.x = element_text(angle = 45, hjust = 1, size = 9),
+          plot.title = element_text(hjust = 0.5, face = "bold"),
+          legend.position = "none",
+          panel.grid.minor = element_blank()
+        ) +
+        xlab("") + ylab("") +
+        
+        # Add n= sample size at the bottom (y_min_total is equal for all groups here)
+        stat_summary(fun.data = function(x) {
+          data.frame(y = plot_bottom, label = paste0('n=', length(x)))
+        }, geom = "text", size = 3.7, fontface = "bold", color="white", alpha = 0.5) + 
+        stat_summary(fun.data = function(x) {
+          data.frame(y = plot_bottom, label = paste0('n=', length(x)))
+        }, geom = "text", size = 3.4, fontface = "bold", color="white", alpha = 0.5) + 
+        stat_summary(fun.data = function(x) {
+          data.frame(y = plot_bottom, label = paste0('n=', length(x)))
+        }, geom = "text", size = 3.1, fontface = "bold", color="white", alpha = 0.5) + 
+        stat_summary(fun.data = function(x) {
+          data.frame(y = plot_bottom, label = paste0('n=', length(x)))
+        }, geom = "text", size = 2.8) +
+        
+        # Add Mean value above the median
+        stat_summary(fun.data = function(x) {
+          data.frame(y = median(x) + 0.05 * y_range_total, label = round(mean(x), 1))
+        }, geom = "text", size = 4.1, fontface = "bold", color="white", alpha = 0.5) + 
+        stat_summary(fun.data = function(x) {
+          data.frame(y = median(x) + 0.05 * y_range_total, label = round(mean(x), 1))
+        }, geom = "text", size = 3.8, fontface = "bold", color="white", alpha = 0.5) + 
+        stat_summary(fun.data = function(x) {
+          data.frame(y = median(x) + 0.05 * y_range_total, label = round(mean(x), 1))
+        }, geom = "text", size = 3.5, fontface = "bold", color="white", alpha = 0.5) + 
+        stat_summary(fun.data = function(x) {
+          data.frame(y = median(x) + 0.05 * y_range_total, label = round(mean(x), 1))
+        }, geom = "text", size = 3.2)
+
+      # Apply manual colors if provided
+      if (!is.null(colors)) {
+        p <- p + scale_color_manual(values = colors)
       }
-    } else if (i %% ncol == 0) {
-      j <- j + 1
-      glist[[j]] <- blank
+      
+      return(p)
+    })
+    
+    # Capture the legend from the first plot processed
+    if (is.null(mylegend)) {
+      mylegend <- g_legend(p_item + theme(legend.position = "right", legend.title = element_blank()))
     }
     
-    j <- j + 1
+    glist[[length(glist) + 1]] <- p_item
   }
-  
-  p3 <- gridExtra::grid.arrange(grobs = glist, ncol = ncol + 1, widths = c(rep(10, each = ncol), 3))
+
+  # 4. Final Assembly (No Legend)
+  # Simply arrange the grobs in the specified grid without adding a legend column
+  gridExtra::grid.arrange(
+    grobs = glist, 
+    nrow = n_row, 
+    ncol = n_col
+  )
 }

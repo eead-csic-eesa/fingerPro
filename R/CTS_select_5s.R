@@ -8,7 +8,8 @@
 #' 
 #' @return Data frame containing the normalized error for each tracer.
 #'
-CTS_error_4s <- function(source, mixture, solution)
+#' @keywords internal
+CTS_error_5s <- function(source, mixture, solution)
 {
 	source <- data.matrix(source[-1])
 	mixture <- data.matrix(mixture[-1])
@@ -29,7 +30,7 @@ CTS_error_4s <- function(source, mixture, solution)
 	CTS_error <- c()
 	for (col in c(1:cols))
 	{
-		CTS_error[col] <- abs(source[1,col] * solution[1] + source[2,col] * solution[2] + source[3,col] * solution[3] + source[4,col] * solution[4] -  mixture[1,col])
+		CTS_error[col] <- abs(source[1,col] * solution[1] + source[2,col] * solution[2] + source[3,col] * solution[3] + source[4,col] * solution[4] + source[5,col] * solution[5] -  mixture[1,col])
 	}
 	
 	return(data.frame(tracer, CTS_error))

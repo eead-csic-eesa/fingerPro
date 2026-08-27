@@ -8,6 +8,7 @@
 #' 
 #' @return Data frame containing the normalized error for each tracer.
 #'
+#' @keywords internal
 CTS_error_3s <- function(source, mixture, solution)
 {
   source <- data.matrix(source[-1])

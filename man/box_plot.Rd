@@ -2,26 +2,22 @@
 % Please edit documentation in R/box_plot.R
 \name{box_plot}
 \alias{box_plot}
-\title{Box and whiskers plot for sediment tracers}
+\title{Generate box-and-whisker plots for sediment tracers}
 \usage{
-box_plot(data, tracers = NULL, ncol = 3, colors = NULL)
+box_plot(data, page = 1, n_row = 2, n_col = 3, colors = NULL)
 }
 \arguments{
-\item{data}{A data frame containing sediment source and mixture data. Users should ensure their data is in a valid format by using the check_database() function before running this function.}
+\item{data}{A data frame containing sediment source and mixture data.}
 
-\item{tracers}{A numeric vector specifying the column indices of the tracers to be plotted. The index 1 corresponds to the first tracer column after the sample ID and group columns. If NULL (the default), plots will be generated for all tracer columns.}
+\item{page}{Integer specifying which set of tracers to display (default = 1).}
 
-\item{ncol}{An integer specifying the number of charts to display per row in the final plot layout.}
+\item{n_row}{Number of rows per page (default = 3).}
 
-\item{colors}{A character vector of colors to use for the box plots. The colors are applied sequentially to each group (sources and mixture).}
+\item{n_col}{Number of columns per page (default = 2).}
+
+\item{colors}{Optional character vector of colors for the groups.}
 }
 \description{
-This function creates a series of box and whisker plots to visualize the distribution and variability of individual tracers within a dataset. It is designed to work with sediment source and mixture data, automatically adapting to averaged or raw data formats.
-}
-\details{
-This function is a wrapper for ggplot2 that automates the creation of a series of box plots, one for each tracer. The function first checks if the input data is averaged, and if so, converts it to a virtual raw dataset using the raw_dataset() function to enable the box plot visualization.
-
-Each plot displays the distribution of a single tracer, with different groups (sources and mixtures) represented by separate box plots. In addition to the standard five-number summary (median, hinges, and whiskers), the function also overlays the sample count and the mean value for each group, providing a more detailed summary of the data.
-
-The final output is a multi-panel plot arranged in a grid, with an optional legend depending on the input data.
+This function creates a series of box and whisker plots arranged in a grid.
+It uses a paging system to prevent overlapping and ensures equal-sized plots.
 }

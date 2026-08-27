@@ -1,156 +1,166 @@
-![github version](https://img.shields.io/badge/GitHub-2.0-blueviolet?logo=github)
-[![cran version](http://www.r-pkg.org/badges/version/fingerPro?color=yellow)](https://cran.r-project.org/package=fingerPro)
-[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/fingerPro)](https://github.com/metacran/cranlogs.app)
-[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
+![GitHub version](https://img.shields.io/badge/GitHub-2.1-blueviolet?logo=github)
+[![CRAN version](https://www.r-pkg.org/badges/version/fingerPro?color=yellow)](https://cran.r-project.org/package=fingerPro)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/fingerPro)](https://github.com/metacran/cranlogs.app)
+[![Project status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
-![logo def-github-04](https://user-images.githubusercontent.com/30837036/91882995-13c90200-ec84-11ea-9643-0191dfbca995.jpg)
+![FingerPro and EESA](vignettes/LOGO2026_FingerPro-EESA.png)
 
-This is the official version of the fingerPro model. This repository contains the original source code, the most recent updates, and documentation validated by the core development team to ensure the reliability of results in sediment fingerprinting research.
+This is the official repository of `fingerPro`. It contains the source code, current updates, and documentation validated by the core development team for sediment fingerprinting research.
 
-## Core Development Team
-* **A. Navas** (Core Developer / Principal Investigator / Funding Acquisition (*) / Project Coordination / Thesis Director)
-* **B. Latorre** (Core Developer)
-* **L. Gaspar** (Core Developer)
+`fingerPro` is an R framework for sediment source fingerprinting. It combines data exploration, tracer selection, source unmixing, visualization, and validation of source apportionments. The package builds on more than 16 years of methodological work by the EESA research group (Erosion and Evaluation of Soil and Water) at the Spanish National Research Council (CSIC), Experimental Station of Aula Dei (EEAD), Zaragoza, Spain.
 
-* Projects: 1. CICYT project MEDEROCAR (CGL2008-0831), 2. PTA contract (PTA2009-2258-P), 3. CICYT project EROMED (CG2011-25486), 4. CICYT project TRAZESCAR (CGL2014-52986-R), 5. Predoctoral contract (BES-2015-071780), 6. AEI project RedNutSoil (PID2019-104857RB-I00), 7. AEI project PID2019-103946RJ-I00
+## Core development team
 
-## Contributors during PhD thesis developement 
-* **L. Palazón** (Contributor in the frame of her PhD thesis (2010-1016) funded by projects: MEDEROCAR (CGL2008-0831), PTA contract (PTA2009-2258-P)EROMED (CG2011-25486), TRAZESCAR (CGL2014-52986-R))
-* **I. Lizaga** (Contributor in the frame of his PhD thesis (2016-2020) funded by project: TRAZESCAR (CGL2014-52986-R), Predoctoral contract (BES-2015-071780))
+- **B. Latorre:** Core Developer
+- **L. Gaspar:** Core Developer
+- **A. Navas:** Core Developer, Principal Investigator, Funding Acquisition, Project Coordination, and Thesis Director
 
-# A Comprehensive R Package for Sediment Source Unmixing
+Funding projects: CICYT MEDEROCAR (CGL2008-0831), PTA contract (PTA2009-2258-P), CICYT EROMED (CG2011-25486), CICYT TRAZESCAR (CGL2014-52986-R), Predoctoral contract (BES-2015-071780), AEI RedNutSoil (PID2019-104857RB-I00), and AEI PID2019-103946RJ-I00.
 
-`fingerPro` is an R package designed to quantify the provenance of sediments in a catchment or study area by applying a mixing model algorithm to end sediment mixtures based on a comprehensive characterization of the sediment sources. The fingerPro model builds upon the foundational concept of using mass balance linear equations for sediment source quantification by incorporating several distinct technical advancements. It employs an optimization approach to normalize discrepancies in tracer ranges and minimize the objective function. Latin hypercube sampling is used to explore all possible combinations of source contributions (0-100%), mitigating the risk of local minima. Uncertainty in source estimates is quantified through a Monte Carlo routine, and the model includes additional metrics, such as the normalized error of the virtual mixture, to detect mathematical inconsistencies, non-physical solutions, and biases. A new linear variability propagation (LVP) method is also included to address and quantify potential bias in model outcomes, particularly when dealing with dominant or non-contributing sources and high source variability, offering a significant advancement for field studies where direct comparison with theoretical apportionments is not feasible. The package includes several graphs to help users with data understanding, such as box plots, correlation, PCA, and LDA graphs. Furthermore, new methods such as Consensus Ranking (CR) and Consistent Tracer Selection (CTS) are included to correctly apply the fingerprinting technique and increase dataset and model understanding. A new Conservative Balance (CB) method has also been incorporated to enable the use of isotopic tracers.
+## Contributors during PhD thesis development
 
------
+- **L. Palazón:** Contributor during her PhD thesis (2010-2016), funded by MEDEROCAR, PTA2009-2258-P, EROMED, and TRAZESCAR.
+- **I. Lizaga:** Contributor during his PhD thesis (2016-2020), funded by TRAZESCAR and the BES-2015-071780 predoctoral contract.
 
-### Key Features
+---
 
-#### Data Exploration
+## Methodological principles
 
-  * **Box and whiskers plot**: This function creates a series of plots to visualize the distribution and variability of individual tracers. It works with both averaged and raw data formats.
-  * **Correlation matrix chart**: This function displays a correlation matrix of each property, divided by the different sources, to help with tracer selection.
-  * **Linear discriminant analysis chart**: This function performs a linear discriminant analysis and displays the data in the relevant dimensions.
-  * **Principal component analysis chart**: This function performs a principal components analysis on the data and displays a biplot of the results for each source.
+Each mixture should be analysed independently. Optimum tracer selection depends on the combined information from the sources and the mixture, so a tracer set selected for one mixture is not automatically suitable for another. Using different optimum tracer sets does not prevent comparison between mixtures; it allows the analysis to adapt to each dataset.
 
-#### Tracer Selection Methods
+The user has an active role in tracer selection. Intermediate results should be interpreted before choosing a seed, setting an error threshold, or proceeding to unmixing.
 
-  * **Consensus Ranking (CR)**: This is an ensemble technique to identify non-conservative and dissenting tracers. The CR score, which ranges from 100 to 0, indicates a tracer's rank in terms of consensus and conservativeness. Tracers are ordered by score, with high scores indicating conservative tracers and low scores indicating dissenting ones.
-  * **Conservativeness Index (CI)**: This function calculates the CI for each tracer based on the results of an individual tracer analysis. The CI was adapted from its original definition to better describe tracer conservativeness in a high-dimensional space of multiple sources.
-  * **Consistent Tracer Selection (CTS) seeds**: This function extracts all possible minimal tracer combinations to identify the most discriminant ones. The dispersion of the solution reflects the discriminant capacity of each tracer combination, where a lower dispersion indicates higher discriminant capacity.
-  * **Range test**: This function excludes properties of the sediment mixture that are outside the minimum and maximum values of the sediment sources.
+## Key features
 
-#### Specialized Tracer Analysis
+### Data input and exploration
 
-  * **Conservative Balance (CB) Method**: This function transforms isotopic ratio and content data into virtual elemental tracers. This allows isotopic tracers to be analyzed with classical unmixing models and combined with elemental tracers to potentially increase discriminant capacity.
+- `read_database()` reads a CSV file and validates its structure before analysis.
+- `box_plot()` displays tracer distributions and variability.
+- `correlation_plot()` examines relationships among tracers within sources.
+- `LDA_plot()` and `PCA_plot()` display source discrimination in reduced dimensions.
+- `ternary_diagram()` visualizes individual tracer behaviour, particularly for three-source problems.
+- `range_test()` identifies mixture tracer values outside the range defined by the sources.
 
-#### Unmixing and Results
+### Consistent Tracer Selection
 
-  * **Unmix**: This function assesses the relative contribution of potential sediment sources to each sediment mixture using a mass balance approach. It supports both unconstrained and constrained optimization. The output is a data frame with the relative contributions of sediment sources to each sediment mixture across all iterations.
-  * **plot\_results**: This function generates a plot showing the relative contribution of sediment sources to each mixture. It can use either violin charts or density plots.
+CTS is the tracer-selection method proposed by `fingerPro`. CI and CR are complementary screening methods for identifying non-conservative or dissenting tracers, and this screening purpose is already integrated into the CTS workflow. CI or CR should therefore not be used alone to define the final tracer set: neither method evaluates tracer discrimination or the mathematical consistency of the selected combination, whereas CTS addresses both properties.
 
------
+The CTS workflow in `fingerPro` 2.1 has two steps:
 
-### Installation
+1. `CTS_explore()` evaluates all possible minimal tracer combinations. It reports physical feasibility and dispersion, which help the user select a candidate seed.
+2. `CTS_select()` extends the selected seed and retains tracers whose normalized error is below a user-defined threshold.
 
-You can install the stable release of `fingerPro` directly from CRAN.
+This two-step interface replaces the former `CTS_seeds()` and `CTS_error()` workflow.
+
+### Source unmixing and results
+
+- `unmix()` estimates source contributions using constrained or unconstrained mass-balance models. It supports Monte Carlo uncertainty analysis and linear variability propagation (LVP).
+- `plot_results()` displays the distributions of estimated source contributions as density or violin plots.
+- `validate_results()` compares observed mixture tracer values with values predicted from a proposed apportionment. The normalized errors help identify mathematically inconsistent solutions.
+
+### Isotopic tracer analysis
+
+`CB_method()` applies the Conservative Balance transformation to isotopic ratio and content data. The resulting virtual scalar tracers can be analysed with the standard unmixing workflow and combined with geochemical tracers when appropriate.
+
+Additional functions, including `CR()`, `CI()`, `DFA_test()`, `KW_test()`, and `individual_tracer_analysis()`, remain available for complementary analyses. See the function documentation for their intended use.
+
+---
+
+## Installation
+
+Install the stable release from CRAN:
 
 ```r
-# Install fingerPro from CRAN
 install.packages("fingerPro")
-
-# Load the package
-library('fingerPro')
+library(fingerPro)
 ```
 
------
+## Quick start
 
-### Getting Started
+The package includes raw and averaged examples for geochemical and isotopic tracers. This example follows the main workflow for a three-source geochemical dataset:
 
-Before running any of the package's functions, it's crucial to ensure your data is correctly formatted. The `check_database()` function automatically verifies the integrity of your dataset and infers its type ("raw", "averaged", or "isotopic") based on its column names.
+```r
+library(fingerPro)
 
-#### Database Formats
+# Read and validate the example data
+data <- read_database(
+  system.file(
+    "extdata",
+    "example_geochemical_3s_raw.csv",
+    package = "fingerPro"
+  )
+)
 
-The package supports four main database formats, each with specific column requirements:
+# Explore the data
+box_plot(data)
+correlation_plot(data)
+LDA_plot(data)
+PCA_plot(data)
+ternary_diagram(data)
+range_test(data)
 
-  * **'raw' format**: Contains individual measurements for scalar tracers. It must have columns for **ID**, **samples**, and **tracer1, tracer2, ...**.
-  * **'isotopic raw' format**: Contains individual measurements for isotopic tracers, which require both ratio and content data. It must have columns for **ID**, **samples**, **ratio1, ratio2, ...**, and **cont\_ratio1, cont\_ratio2, ...**.
-  * **'averaged' format**: Contains statistical summaries of the scalar tracer data. It must have columns for **ID**, **samples**, **mean\_tracer1, mean\_tracer2, ...**, **sd\_tracer1, sd\_tracer2, ...**, and **n**.
-  * **'isotopic averaged' format**: Contains statistical summaries for isotopic tracers. It must have columns for **ID**, **samples**, **mean\_ratio1, mean\_ratio2, ...**, **mean\_cont\_ratio1, mean\_cont\_ratio2, ...**, **sd\_ratio1, sd\_ratio2, ...**, **sd\_cont\_ratio1, sd\_cont\_ratio2, ...**, and **n**.
+# Explore minimal tracer combinations
+tracer_seeds <- CTS_explore(data, iter = 1000)
 
-#### Example Workflow
+# Select a seed after inspecting feasibility and dispersion
+selected_data <- CTS_select(
+  data,
+  tracer_seeds,
+  seed_id = 1,
+  error_threshold = 0.05
+)
 
-Here is a typical workflow for using `fingerPro` to analyze a sediment dataset:
+# Estimate and display source contributions
+output_unmix <- unmix(selected_data)
+plot_results(output_unmix, violin = FALSE)
 
-1.  **Load and Verify Data**
+# Validate a proposed apportionment
+normalized_error <- validate_results(
+  selected_data,
+  apportionments = c(0.435, 0.285, 0.280),
+  error_threshold = 0.05
+)
+```
 
-    ```r
-    # Load the example dataset for a 3-source mixing problem.
-    data <- read.csv(system.file("extdata", "example_geo_3s_raw.csv", package = "fingerPro"))
+The selected `seed_id` should be based on the `CTS_explore()` results. Prefer combinations with a high percentage of physically feasible solutions and low dispersion across sources; do not assume that row 1 is appropriate for every dataset.
 
-    # Verify the structure and integrity of the loaded dataset.
-    check_database(data)
-    ```
+## Documentation
 
-2.  **Exploratory Analysis & Tracer Pre-selection**
+Version 2.1 includes step-by-step vignettes to guide users through the `fingerPro` workflow and its main functions.
 
-      * Visualize tracer distributions with a box plot: `box_plot(data)`.
-      * Examine tracer relationships with a correlation plot: `correlation_plot(data)`.
-      * Use statistical tests to pre-select discriminant tracers:
-          * **Kruskal-Wallis Test**: `KW_test(data)`
-          * **Discriminant Function Analysis (DFA)**: `DFA_test(data)`
+- [About FingerPro](vignettes/About-FingerPro.Rmd): methodological principles, package features, citation, and references.
+- [Getting Started](vignettes/Getting-Started.Rmd): installation, project organization, supported input formats, and example datasets.
+- [Workflow Example](vignettes/Workflow-Example.Rmd): a complete analysis from data validation to result validation.
 
-3.  **Advanced Tracer Selection**
+Function-level documentation is available from R, for example:
 
-      * Calculate the **Consensus Ranking (CR)** score for each tracer to identify conservative ones: `output_CR <- CR(data, debates = 1000)`.
-      * Identify the most discriminant minimal tracer combinations using `CTS_seeds()`: `output_CTS_seeds <- CTS_seeds(data, iter = 1000)`.
-      * Perform an **Individual Tracer Analysis (ITA)** to assess tracer behavior in different contexts: `output_ITA <- individual_tracer_analysis(data)`.
-      * Based on the ITA results, calculate the **Conservativeness Index (CI)**: `output_CI <- CI(output_ITA)`.
+```r
+help("CTS_explore", package = "fingerPro")
+help("CTS_select", package = "fingerPro")
+help("unmix", package = "fingerPro")
+help("validate_results", package = "fingerPro")
+```
 
-4.  **Final Tracer Selection & Unmixing**
-
-      * Merge the results from the CTS, CR, and CI analyses to create a summary data frame.
-      * Filter the summary data to select only the most robust tracers, for instance, by setting criteria for a low CTS error (\< 0.05) and a high CR score (\> 80).
-      * Use the `select_tracers()` function to create a new data frame with only the selected tracers: `data <- select_tracers(data, output_data_TracerSelection[, 1])`.
-      * Run the unmixing model: `output_UNMIX <- unmix(data)`.
-
-5.  **Visualize and Save Results**
-
-      * Visualize the source contributions using violin or density plots: `plot_results(output_UNMIX)`.
-      * Save your results to the workspace with `write_results(output_UNMIX)`.
-
------
-
-##  :point_right: Frequently Asked Questions :arrow_right: [Check them!](FaQ.md)
-
------
+---
 
 ## Contributing and feedback
-This software has been improved by the questions, suggestions, and bug reports of the user community. If you have any comments, please use the [Issues](https://github.com/eead-csic-eesa/fingerPro/issues) page or report them to fingerpro@eead.csic.es.
 
------
+Questions, suggestions, and bug reports can be submitted through the [GitHub Issues](https://github.com/eead-csic-eesa/fingerPro/issues) page or sent to [fingerpro@eead.csic.es](mailto:fingerpro@eead.csic.es).
 
 ## Citing fingerPro
 
-Latorre, B., Lizaga, I., Gaspar, L., & Navas, A, 2025. Evaluating the Impact of High Source Variability and Extreme Contributing Sources on Sediment Fingerprinting Models. *Water Resources Management*, *1-15*. https://doi.org/10.1007/s11269-025-04169-8
+To cite the package, use:
 
-Lizaga, I., Latorre, B., Gaspar, L., Navas, A., 2022. Combined use of geochemistry and compound-specific stable isotopes for sediment fingerprinting and tracing. *Science of The Total Environment* 832, 154834. https://doi.org/10.1016/j.scitotenv.2022.154834
+> Latorre, B., Gaspar, L., Lizaga, I., Palazon, L., Vu, V. Q., and Navas, A. (2026). *FingerPro: Unmixing Model Framework* (R package). Comprehensive R Archive Network (CRAN). https://doi.org/10.32614/CRAN.package.fingerPro
 
-Latorre, B., Lizaga, I., Gaspar, L., Navas, A., 2021. A novel method for analysing consistency and unravelling multiple solutions in sediment fingerprinting. *Science of The Total Environment* 789, 147804. https://doi.org/10.1016/j.scitotenv.2021.147804
+The package also provides its citation metadata through:
 
-Lizaga, I., Latorre, B., Gaspar, L., Navas, A., 2020a. Consensus ranking as a method to identify non-conservative and dissenting tracers in fingerprinting studies. Science of The Total Environment 720, 137537. https://doi.org/10.1016/j.scitotenv.2020.137537
+```r
+citation("fingerPro")
+```
 
-Lizaga, I., Latorre, B., Gaspar, L., Navas, A., 2020. FingerPro: an R package for tracking the provenance of sediment. *Water Resources Management* 272, 111020. https://doi.org/10.1007/s11269-020-02650-0
+The [About FingerPro vignette](vignettes/About-FingerPro.Rmd) contains the legal deposits and the full list of methodological and applied references.
 
------
+## License
 
-## Related research
-- Combining geochemistry and [isotopic tracers](https://www.sciencedirect.com/science/article/pii/S0048969722019271?via%3Dihub#f0040)
-- New tools for understanding individual tracers and [tracer selection methodologies ](https://www.sciencedirect.com/science/article/pii/S0048969720310482?via%3Dihub)
-- Sediment source fingerprinting in Glacial Landscapes, [Svalbard](https://www.sciencedirect.com/science/article/pii/S0169555X20302762?via%3Dihub), [Peruvian Andes](https://onlinelibrary.wiley.com/doi/full/10.1002/hyp.14662) and [Antarctica](https://www.sciencedirect.com/science/article/pii/S0169555X24002629?via%3Dihub)
-- Agricultural Cycle influence in [sediment and pollutant transport](https://www.sciencedirect.com/science/article/pii/S0301479720309488?via%3Dihub)
-- Changes in source contribution [during](https://www.sciencedirect.com/science/article/pii/S0301479719304220?via%3Dihub) an exceptional storm event and [before and after the event](https://www.sciencedirect.com/science/article/pii/S0169555X19302302?via%3Dihub)
-- Sediment source fingerprinting in [desert environments](https://www.sciencedirect.com/science/article/pii/S0341816223001029?via%3Dihub)
-- Sediment source fingerprinting to track pollutants in [mountainous fluvial environment](https://www.sciencedirect.com/science/article/pii/S004896972303053X?via%3Dihub), [mining areas](https://www.mdpi.com/2071-1050/15/15/11856) and [agroecosystems](https://www.sciencedirect.com/science/article/pii/S0301479720309488?via%3Dihub) 
-- [Testing FingerPro model](https://www.sciencedirect.com/science/article/pii/S0016706118300570) with artificial samples
-- [Particle size effect](https://www.sciencedirect.com/science/article/pii/S0169555X2200071X?via%3Dihub)
+`fingerPro` is distributed under the [GNU General Public License version 2](LICENSE).

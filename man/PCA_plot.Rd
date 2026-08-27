@@ -2,7 +2,7 @@
 % Please edit documentation in R/PCA_plot.R
 \name{PCA_plot}
 \alias{PCA_plot}
-\title{Principal component analysis chart}
+\title{Perform and visualize Principal Component Analysis (PCA)}
 \usage{
 PCA_plot(data, components = c(1, 2), colors = NULL)
 }
